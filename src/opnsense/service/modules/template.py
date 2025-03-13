@@ -119,7 +119,7 @@ class Template(object):
         :return: list (dict) of registered modules
         """
         result = list()
-        for root, dirs, files in os.walk(self._template_dir):
+        for root, dirs, files in os.walk(self._template_dir, followlinks=True):
             if root.count('/') > self._template_dir.count('/'):
                 module_name = root.replace(self._template_dir, '')
                 result.append(module_name)
