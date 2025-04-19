@@ -37,7 +37,12 @@ class Model extends ParsedBase {
 }
 
 
-class ModelRegistry extends Registry {}
+class ModelRegistry extends Registry {
+    public static function get_schema_name(string $class_name) {
+        $name = strtolower($class_name);
+        return str_replace("\\", ".", $name);
+    }
+}
 
 
 $base_path = $config->__get("application")->modelsDir;

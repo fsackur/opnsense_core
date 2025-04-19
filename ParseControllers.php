@@ -267,7 +267,13 @@ class Controller extends ParsedBase {
 }
 
 
-class ControllerRegistry extends Registry {}
+class ControllerRegistry extends Registry {
+    public static function get_schema_name(string $class_name) {
+        $name = strtolower($class_name);
+        $name = str_replace(["\\api", "controller"], "", $name);
+        return str_replace("\\", ".", $name);
+    }
+}
 
 
 $base_path = $config->__get("application")->controllersDir;

@@ -58,12 +58,15 @@ abstract class ParsedBase {
 abstract class Registry {
     private static ReflectionClass $generic_class;
     private static ReflectionClass $root_class;
-    private static $registry = array();
+    private static array $registry = array();
+    private static array $schema_registry = array();
 
     public static function init(ReflectionClass $generic_class, ReflectionClass $root_class) {
         static::$generic_class = $generic_class;
         static::$root_class = $root_class;
     }
+
+    abstract public static function get_schema_name(string $class_name);
 
     public static function register(ReflectionClass $rclass) {
         $name = $rclass->getName();
@@ -85,11 +88,19 @@ abstract class Registry {
 
         $obj = static::$generic_class->newInstance($rclass, $parent);
         static::$registry[$name] = $obj;
+
+        $schema_name = static::get_schema_name($name);
+        static::$schema_registry[$schema_name] = $obj;
     }
 
     public static function get(string $name) {
         if (array_key_exists($name, static::$registry)) {
             return static::$registry[$name];
+        } else {
+            $schema_name = static::get_schema_name($name);
+            if (array_key_exists($name, static::$schema_registry)) {
+                return static::$schema_registry[$name];
+            }
         }
     }
 
@@ -154,6 +165,12 @@ class Parser {
 
         $dump = $this->registry->getMethod("dump");
         return $dump->invoke(null);
+    }
+
+    public function get($class_name)
+    {
+        $get = $this->registry->getMethod("get");
+        return $get->invoke(null, $class_name);
     }
 
     public function export($base_path, $output_file = null, $pretty = false)
