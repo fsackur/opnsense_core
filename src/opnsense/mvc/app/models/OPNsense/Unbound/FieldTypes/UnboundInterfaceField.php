@@ -50,12 +50,15 @@ class UnboundInterfaceField extends BaseListField
             }
         }
 
-        foreach ($config->openvpn->children() as $mode => $setting) {
-            if (!empty($setting)) {
-                $key = 'ovpn' . substr($mode, 8, 1) . (string)$setting->vpnid;
-                $type = substr($mode, 8, 6);
-                $this->internalOptionList[$key] = "OpenVPN {$type} (" . (!empty($setting->description) ?
-                    (string)$setting->description : (string)$setting->vpnid) . ")";
+        $children = $config->openvpn->children();
+        if ($children) {
+            foreach ($children as $mode => $setting) {
+                if (!empty($setting)) {
+                    $key = 'ovpn' . substr($mode, 8, 1) . (string)$setting->vpnid;
+                    $type = substr($mode, 8, 6);
+                    $this->internalOptionList[$key] = "OpenVPN {$type} (" . (!empty($setting->description) ?
+                        (string)$setting->description : (string)$setting->vpnid) . ")";
+                }
             }
         }
 
