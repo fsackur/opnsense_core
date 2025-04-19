@@ -61,40 +61,40 @@ abstract class Registry {
     private static $registry = array();
 
     public static function init(ReflectionClass $generic_class, ReflectionClass $root_class) {
-        self::$generic_class = $generic_class;
-        self::$root_class = $root_class;
+        static::$generic_class = $generic_class;
+        static::$root_class = $root_class;
     }
 
     public static function register(ReflectionClass $rclass) {
         $name = $rclass->getName();
-        if (array_key_exists($name, self::$registry)) {
+        if (array_key_exists($name, static::$registry)) {
             return;
         }
 
         $rparent = $rclass->getParentClass();
         if ($rparent) {
-            self::register($rparent);
-            $parent = self::get($rparent->name);
+            static::register($rparent);
+            $parent = static::get($rparent->name);
         } else {
             $parent = null;
         }
 
-        if (!$parent && $rclass != self::$root_class) {
+        if (!$parent && $rclass != static::$root_class) {
             return;
         }
 
-        $obj = self::$generic_class->newInstance($rclass, $parent);
-        self::$registry[$name] = $obj;
+        $obj = static::$generic_class->newInstance($rclass, $parent);
+        static::$registry[$name] = $obj;
     }
 
     public static function get(string $name) {
-        if (array_key_exists($name, self::$registry)) {
-            return self::$registry[$name];
+        if (array_key_exists($name, static::$registry)) {
+            return static::$registry[$name];
         }
     }
 
     public static function dump() {
-        return array_values(self::$registry);
+        return array_values(static::$registry);
     }
 }
 
