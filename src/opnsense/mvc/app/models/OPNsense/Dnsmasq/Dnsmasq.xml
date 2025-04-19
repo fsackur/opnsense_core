@@ -76,7 +76,7 @@
                 <IpAllowed>N</IpAllowed>
             </host>
             <domain type="TextField">
-                <Mask>/^(?:(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$/i</Mask>
+                <Mask>/^(?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$/</Mask>
                 <ValidationMessage>A valid domain must be specified.</ValidationMessage>
             </domain>
             <ip type="NetworkField">

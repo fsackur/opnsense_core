@@ -25,7 +25,7 @@
             <noarecords type="BooleanField"/>
             <regdhcp type="BooleanField"/>
             <regdhcpdomain type="TextField">
-                <Mask>/^(?:(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$/i</Mask>
+                <Mask>/^(?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$/</Mask>
                 <ValidationMessage>A valid domain must be specified.</ValidationMessage>
             </regdhcpdomain>
             <regdhcpstatic type="BooleanField"/>
@@ -108,11 +108,11 @@
             </privateaddress>
             <insecuredomain type="CSVListField"/>
             <msgcachesize type="TextField">
-                <Mask>/[0-9]+[kmg]?/i</Mask>
+                <Mask>/[0-9]+[kKmMgG]?/</Mask>
                 <ValidationMessage>The cache size should be numeric, optionally appended with 'k', 'm', or 'g'</ValidationMessage>
             </msgcachesize>
             <rrsetcachesize type="TextField">
-                <Mask>/[0-9]+[kmg]?/i</Mask>
+                <Mask>/[0-9]+[kKmMgG]?/</Mask>
                 <ValidationMessage>The cache size should be numeric, optionally appended with 'k', 'm', or 'g'</ValidationMessage>
             </rrsetcachesize>
             <outgoingnumtcp type="NumericField"/>
@@ -236,7 +236,7 @@
             <whitelists type="CSVListField"/>
             <blocklists type="CSVListField"/>
             <wildcards type="CSVListField">
-                <Mask>/^((?:(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.){1,})(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$/i</Mask>
+                <Mask>/^((?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.){1,})(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$/</Mask>
                 <ValidationMessage>A valid domain must be specified.</ValidationMessage>
                 <MaskPerItem>Y</MaskPerItem>
             </wildcards>
@@ -297,7 +297,7 @@
                 </hostname>
                 <domain type="TextField">
                     <Required>Y</Required>
-                    <Mask>/^(?:(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$/i</Mask>
+                    <Mask>/^(?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$/</Mask>
                     <ValidationMessage>A valid domain must be specified.</ValidationMessage>
                 </domain>
                 <rr type="OptionField">
@@ -406,7 +406,7 @@
                             <check></check>
                         </check001>
                     </Constraints>
-                    <Mask>/^(?:(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*(?:[a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$/i</Mask>
+                    <Mask>/^(?:(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*(?:[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])$/</Mask>
                     <ValidationMessage>A valid domain must be specified.</ValidationMessage>
                 </domain>
                 <description type="DescriptionField"/>
