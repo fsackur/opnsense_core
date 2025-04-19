@@ -13,7 +13,7 @@ require_once(dirname(__FILE__) . '/ParserBase.php');
 
 
 class Model extends ParsedBase {
-    private $instance;
+    private BaseModel $instance;
 
     public function __construct(ReflectionClass $rclass, Model | null $parent)
     {
@@ -31,7 +31,8 @@ class Model extends ParsedBase {
         return $this->instance->getNodes();
     }
 
-    public function validate(BaseField $nodes) {
+    public function validate($nodes) {
+        $this->instance->setNodes($nodes);
         $this->instance->performValidation(true);
     }
 }
@@ -53,18 +54,31 @@ $parser = new Parser(
     $path_regex = "/models\/\w+\/\w+\/\w+\.php/",
 );
 
-if ($output_file) {
-    $parser->export($base_path, $output_file, true);
+$parser->export($base_path, $output_file, true);
+
+$input_file = "./mock_models.json";
+if ($input_file) {
+
+    $fd = fopen($input_file, "r") or die("Failed to touch '" . $input_file . "'");
+    $json = fread($fd, filesize($input_file));
+    fclose($fd);
+    $mocks = json_decode($json, $associative = true);
+
+    foreach($mocks as $schema_name => $mock) {
+        $model = $parser->get($schema_name);
+        // var_dump($mock);
+        echo "Validating $schema_name against $model->name\n";
+
+        $model->validate($mock);
+    }
+
+
+    // $models = $parser->get_all($base_path);
+    // foreach ($models as $model) {
+    //     if ($model->is_abstract) {continue;}
+    //     $data = $model->getData();
+
+    //     var_dump($data);
+    // }
 }
-
-$models = $parser->get_all($base_path);
-
-
-foreach ($models as $model) {
-    if ($model->is_abstract) {continue;}
-    $data = $model->getData();
-
-    var_dump($data);
-}
-
 ?>
