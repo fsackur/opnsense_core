@@ -169,6 +169,10 @@ class Parser {
 
     public function get($class_name)
     {
+        $register = $this->registry->getMethod("register");
+        $rclass = new ReflectionClass($class_name);
+        $register->invoke(null, $rclass);
+
         $get = $this->registry->getMethod("get");
         return $get->invoke(null, $class_name);
     }
