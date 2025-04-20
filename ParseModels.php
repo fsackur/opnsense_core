@@ -19,7 +19,7 @@ require_once(dirname(__FILE__) . '/ParserBase.php');
 
 class Field {
     public string $type;
-    public ?string $reference;
+    public string $reference;
     public ?string $tag;
     public bool $is_ass_array;
     public bool $is_container;
@@ -27,55 +27,32 @@ class Field {
     public array $children = [];
 
     public function __construct(BaseField $node) {
-        $class = new ReflectionClass($node::class);
+        $fakeUuid = "00000000-0000-0000-0000-000000000000";
+        $hex = "a-zA-Z0-9";
+        $uuidPattern = "/[$hex]{8}-[$hex]{4}-[$hex]{4}-[$hex]{4}-[$hex]{12}/";
+        $reference = preg_replace($uuidPattern, $fakeUuid, $node->__reference);
 
-        // $class->getMethod("actionPostLoadingEvent")->invoke($node);
+        $class = new ReflectionClass($node::class);
 
         $this->is_required = $node->isRequired();
         $this->type = $class->name;
         $this->tag = $class->getProperty("internalXMLTagName")->getValue($node);
-        $this->reference = $node->__reference;
+        $this->reference = $reference;
         $this->is_ass_array = $node->isArrayType();
         $this->is_container = $node->isContainer();
 
-        $children = $class->getProperty("internalChildnodes")->getValue($node);
-        // foreach ($node->iterateItems() as $key => $child) {
-        foreach ($children as $key => $child) {
+        // doesn't iterate over ArrayField
+        foreach ($node->iterateItems() as $key => $child) {
             $this->children[$key] = new Field($child);
         }
-        //         "alias": {
-        //             "type": "OPNsense\\Firewall\\FieldTypes\\AliasField",
-        //             "reference": "aliases.alias",
-        //             "tag": "alias",
-        //             "is_ass_array": true,
-        //             "is_container": true,
-        //             "is_required": false,
-        //             "children": {
-        //                 "00000000-0000-0000-0000-000000000000": {
-        //                     "type": "OPNsense\\Base\\FieldTypes\\ContainerField",
-        //                     "reference": "aliases.alias.00000000-0000-0000-0000-000000000000",
-        //                     "tag": "alias",
-        //                     "is_ass_array": false,
-        //                     "is_container": true,
-        //                     "is_required": false,
-        //                     "children": []
-        //                 }
-        //             }
-        //         }
-        return;
-        // if ($this->is_ass_array) {
-        //     $fakeUuid = "00000000-0000-0000-0000-000000000000";
-        //     $ref = "{$this->reference}.{$fakeUuid}";
 
-        //     $class->getMethod("actionPostLoadingEvent")->invoke($node);
+        if ($this->is_ass_array) {
+            $childNodes = $class->getProperty("internalChildnodes")->getValue($node);
+            $firstKey = array_keys($childNodes)[0];
+            $child = $childNodes[$firstKey];
 
-        //     // $newField = $class->getMethod("newContainerField");
-        //     // $child = $newField->invoke($node, $ref, $this->tag);
-        //     $newField = $class->getMethod("getTemplateNode");
-        //     $child = $newField->invoke($node);
-
-        //     $this->children[$fakeUuid] = new Field($child);
-        // }
+            $this->children[$fakeUuid] = new Field($child);
+        }
     }
 }
 
