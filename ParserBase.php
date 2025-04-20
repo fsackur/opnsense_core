@@ -177,25 +177,6 @@ class Parser {
         $get = $this->registry->getMethod("get");
         return $get->invoke(null, $class_name);
     }
-
-    public function export($base_path, $output_file = null, $pretty = false)
-    {
-        $json_flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
-        if ($pretty) {
-            $json_flags = $json_flags | JSON_PRETTY_PRINT;
-        }
-
-        $output = $this->get_all($base_path);
-        $json = json_encode($output, $json_flags) . "\n";
-
-        if ($output_file) {
-            $fd = fopen($output_file, "w") or die("Failed to touch '" . $output_file . "'");
-            fwrite($fd, $json);
-            fclose($fd);
-        } else {
-            return $json;
-        }
-    }
 }
 
 
@@ -242,6 +223,25 @@ if (!$contrib_dir) {
     throw new InvalidArgumentException("Could not find 'contrib' folder in any parent of " . $app_dir);
 }
 //endregion argparse
+
+
+function dump_json($data, $output_file = null, $pretty = false)
+{
+    $json_flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+    if ($pretty) {
+        $json_flags = $json_flags | JSON_PRETTY_PRINT;
+    }
+
+    $json = json_encode($data, $json_flags) . "\n";
+
+    if ($output_file) {
+        $fd = fopen($output_file, "w") or die("Failed to touch '" . $output_file . "'");
+        fwrite($fd, $json);
+        fclose($fd);
+    } else {
+        echo $json;
+    }
+}
 
 
 $config = require $app_dir . "/config/config.php";

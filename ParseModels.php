@@ -4,6 +4,7 @@ namespace OPNsense\OpenApi\Parsing;
 
 use Error;
 use Exception;
+use Reflection;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -18,6 +19,7 @@ require_once(dirname(__FILE__) . '/ParserBase.php');
 
 
 class Field {
+    private ReflectionClass $class;
     public string $type;
     public string $reference;
     public ?string $tag;
@@ -35,6 +37,7 @@ class Field {
         $class = new ReflectionClass($node::class);
 
         $this->is_required = $node->isRequired();
+        $this->class = $class;
         $this->type = $class->name;
         $this->tag = $class->getProperty("internalXMLTagName")->getValue($node);
         $this->reference = $reference;
@@ -53,6 +56,66 @@ class Field {
 
             $this->children[$fakeUuid] = new Field($child);
         }
+    }
+
+    public function is(string $className) {
+        return $this->type === $className || $this->class->isSubclassOf($className);
+    }
+
+    public function getSchema() {
+        $hex = "a-zA-Z0-9";
+        $uuidPattern = "^[$hex]{8}-[$hex]{4}-[$hex]{4}-[$hex]{4}-[$hex]{12}$";
+
+        $schema = [];
+        $schema["x-type"] = $this->type;
+
+        if ($this->is_ass_array) {
+            $childSchemas = [];
+            foreach ($this->children as $prop => $child) {
+                $childSchemas[$uuidPattern] = $child->getSchema();
+            }
+            $schema["type"] = "object";
+            $schema["additionalProperties"] = false;
+            $schema["patternProperties"] = $childSchemas;
+
+        } elseif ($this->is_container) {
+            $childSchemas = [];
+            $required = [];
+            foreach ($this->children as $prop => $child) {
+                $childSchemas[$prop] = $child->getSchema();
+                if ($child->is_required) {
+                    $required[] = $prop;
+                }
+            }
+            $schema["type"] = "object";
+            $schema["additionalProperties"] = false;
+            if ($required) {
+                $schema["required"] = $required;
+            }
+            $schema["properties"] = $childSchemas;
+
+        // } elseif ($this->type === "OPNsense\Base\FieldTypes\BooleanField") {
+        } elseif ($this->is("OPNsense\Base\FieldTypes\BooleanField")) {
+            $schema["type"] = "integer";  // because fuck you, that's why
+            $schema["enum"] = [0, 1];
+            $schema["description"] = "boolean";
+
+        // } elseif ($this instanceof IntegerField || $this instanceof AutoNumberField) {
+        } elseif ($this->is("OPNsense\Base\FieldTypes\IntegerField") || $this->is("OPNsense\Base\FieldTypes\AutoNumberField")) {
+            $schema["type"] = "integer";
+
+        // } elseif ($this instanceof NumericField) {
+        } elseif ($this->is("OPNsense\Base\FieldTypes\NumericField")) {
+            $schema["type"] = "number";
+
+        } else {
+            $schema["type"] = "string";
+            // $properties = $this->walk($this);
+            // var_dump($this);
+            // die();
+        }
+
+        return $schema;
     }
 }
 
@@ -104,6 +167,10 @@ class Model extends ParsedBase {
 
         $this->field = new Field($internalData);
     }
+
+    public function getSchema() {
+        return $this->field->getSchema();
+    }
 }
 
 
@@ -120,13 +187,21 @@ $parser = new Parser(
 
 // echo $parser->export($base_path, $output_file, true);
 
-$model = $parser->get("OPNsense\\Firewall\\Alias");
+// $model = $parser->get("OPNsense\\Firewall\\Alias");
 
-// $output = $model;
-$output = $model->field;
+// // $output = $model;
+// // $output = $model->field;
+// $output = $model->getSchema();
 
-$json_flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT;
-echo json_encode($output, $json_flags) . "\n";
+$schemas = [];
+foreach ($parser->get_all($base_path) as $model) {
+    if ($model->is_abstract) {
+        continue;
+    }
+    $schemas[$model->schema_name] = $model->getSchema();
+}
+
+dump_json($schemas, $output_file, true);
 
 
 ?>

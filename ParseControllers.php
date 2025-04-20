@@ -284,6 +284,7 @@ $parser = new Parser(
     $path_regex = "/\/Api\/\w+Controller/",
 );
 
-echo $parser->export($base_path, $output_file, true);
+$controllers = $parser->get_all($base_path);
+dump_json($controllers, $output_file, true);
 
 ?>
