@@ -166,6 +166,12 @@ class Controller extends ParsedBase {
     public $model;
     public $model_name;
 
+    public static function get_schema_name(string $class_name) {
+        $name = strtolower($class_name);
+        $name = str_replace(["\\api", "controller"], "", $name);
+        return str_replace("\\", ".", $name);
+    }
+
     public function __construct(ReflectionClass $rclass, Controller | null $parent)
     {
         parent::__construct($rclass, $parent);
@@ -267,13 +273,7 @@ class Controller extends ParsedBase {
 }
 
 
-class ControllerRegistry extends Registry {
-    public static function get_schema_name(string $class_name) {
-        $name = strtolower($class_name);
-        $name = str_replace(["\\api", "controller"], "", $name);
-        return str_replace("\\", ".", $name);
-    }
-}
+class ControllerRegistry extends Registry {}
 
 
 $base_path = $config->__get("application")->controllersDir;

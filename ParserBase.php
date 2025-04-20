@@ -26,14 +26,22 @@ $DEFAULT_SOURCE_DIR = "/usr/local/opnsense/mvc/app";
 
 abstract class ParsedBase {
     protected ReflectionClass $class;
-    public $name;
-    public $parent;
-    public $is_abstract;
-    public $doc;
+    public string $name;
+    public ?string $schema_name;
+    public ?string $parent;
+    public bool $is_abstract;
+    public string $doc;
+
+    abstract public static function get_schema_name(string $class_name);
 
     public function __construct(ReflectionClass $rclass, ParsedBase | null $parent)
     {
-        $this->class = $rclass;
+        $name = $rclass->getName();
+        $is_abstract = $rclass->isAbstract();
+        $schema_name = null;
+        if (!$is_abstract) {
+            $schema_name = static::get_schema_name($name);
+        }
 
         $parent_name = null;
         $doc = $rclass->getDocComment();
@@ -46,9 +54,11 @@ abstract class ParsedBase {
             }
         }
 
-        $this->name = $rclass->getName();
+        $this->class = $rclass;
+        $this->name = $name;
+        $this->schema_name = $schema_name;
         $this->parent = $parent_name;
-        $this->is_abstract = $rclass->isAbstract();
+        $this->is_abstract = $is_abstract;
         $this->doc = $doc;
     }
 }
@@ -61,14 +71,11 @@ abstract class Registry {
     private static ReflectionClass $generic_class;
     private static ReflectionClass $root_class;
     private static array $registry = array();
-    private static array $schema_registry = array();
 
     public static function init(ReflectionClass $generic_class, ReflectionClass $root_class) {
         static::$generic_class = $generic_class;
         static::$root_class = $root_class;
     }
-
-    abstract public static function get_schema_name(string $class_name);
 
     public static function register(ReflectionClass $rclass) {
         $name = $rclass->getName();
@@ -90,19 +97,11 @@ abstract class Registry {
 
         $obj = static::$generic_class->newInstance($rclass, $parent);
         static::$registry[$name] = $obj;
-
-        $schema_name = static::get_schema_name($name);
-        static::$schema_registry[$schema_name] = $obj;
     }
 
     public static function get(string $name) {
         if (array_key_exists($name, static::$registry)) {
             return static::$registry[$name];
-        } else {
-            $schema_name = static::get_schema_name($name);
-            if (array_key_exists($name, static::$schema_registry)) {
-                return static::$schema_registry[$name];
-            }
         }
     }
 
