@@ -25,6 +25,7 @@ $DEFAULT_SOURCE_DIR = "/usr/local/opnsense/mvc/app";
 
 
 abstract class ParsedBase {
+    protected ReflectionClass $class;
     public $name;
     public $parent;
     public $is_abstract;
@@ -32,9 +33,10 @@ abstract class ParsedBase {
 
     public function __construct(ReflectionClass $rclass, ParsedBase | null $parent)
     {
+        $this->class = $rclass;
+
         $parent_name = null;
         $doc = $rclass->getDocComment();
-
         if ($parent)
         {
             $parent_name = $parent->name;
