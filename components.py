@@ -40,8 +40,10 @@ def get_spec(models: SchemaDict) -> SchemaDict:
 
 
 def validate_spec(spec: SchemaDict):
+    print("Validating...")
     from openapi_schema_validator.validators import OAS31Validator
     OAS31Validator.check_schema(spec)
+    print(" ...spec passed validation.")
 
 
 def generate_openapi_spec(
@@ -67,7 +69,7 @@ def generate_openapi_spec(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="generate an OpenApi spec")
-    parser.add_argument("-s", "--source-folder", default=_DEFAULT_SOURCE_FOLDER)
+    parser.add_argument("-s", "--schema-file", default="schemas.json")
     parser.add_argument("-o", "--output-file", default="openapi.yml")
     parser.add_argument("-m", "--module", help="filter endpoints by module")
     parser.add_argument("-c", "--controller", help="filter endpoints by controller name (excluding Controller suffix)")

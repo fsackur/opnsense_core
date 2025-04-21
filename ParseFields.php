@@ -13,10 +13,15 @@ require_once(dirname(__FILE__) . '/ParserBase.php');
 
 
 class Field extends ParsedBase {
-    public $methods;
-    public $is_array;
-    public $is_container;
-    public $is_required;
+    // public $methods;
+    // public $is_array;
+    // public $is_container;
+    // public $is_required;
+
+
+    public static function get_schema_name(string $class_name) {
+        return preg_replace("/.*\\\/", "", $class_name);
+    }
 
     public function __construct(ReflectionClass $rclass, Field | null $parent)
     {
@@ -25,17 +30,12 @@ class Field extends ParsedBase {
         if ($this->is_abstract) {
             return;
         }
-        $this->instance = $rclass->newInstance();
+        // $this->instance = $rclass->newInstance();
     }
 }
 
 
-class FieldRegistry extends Registry {
-    public static function get_schema_name(string $class_name) {
-        $name = strtolower($class_name);
-        return str_replace("\\", ".", $name);
-    }
-}
+class FieldRegistry extends Registry {}
 
 
 $base_path = $config->__get("application")->modelsDir;
@@ -46,6 +46,9 @@ $parser = new Parser(
     $path_regex = "/FieldTypes\/\w+\.php/",
 );
 
-echo $parser->export($base_path, $output_file, true);
+$fields = $parser->get_all($base_path);
+
+$output_file = "fields.json";
+dump_json($fields, $output_file, true);
 
 ?>

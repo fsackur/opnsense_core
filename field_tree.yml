@@ -1,0 +1,87 @@
+﻿OPNsense\Auth\FieldTypes\ApiKeyField:
+OPNsense\Auth\FieldTypes\UsernameField:
+OPNsense\Base\FieldTypes\ArrayField:
+  OPNsense\Core\FieldTypes\TunableField:
+  OPNsense\Firewall\FieldTypes\AliasField:
+  OPNsense\Firewall\FieldTypes\FilterRuleField:
+  OPNsense\Firewall\FieldTypes\GroupField:
+  OPNsense\Firewall\FieldTypes\SourceNatRuleField:
+  OPNsense\IDS\FieldTypes\PolicyRulesField:
+  OPNsense\Interfaces\FieldTypes\NeighborField:
+  OPNsense\Interfaces\FieldTypes\VipField:
+  OPNsense\IPsec\FieldTypes\ConnnectionField:
+  OPNsense\IPsec\FieldTypes\SPDField:
+  OPNsense\IPsec\FieldTypes\VTIField:
+  OPNsense\OpenVPN\FieldTypes\InstanceField:
+  OPNsense\Routing\FieldTypes\GatewayField:
+  OPNsense\Trust\FieldTypes\CAsField:
+  OPNsense\Trust\FieldTypes\CertificatesField:
+  OPNsense\Wireguard\FieldTypes\ClientField:
+  OPNsense\Wireguard\FieldTypes\ServerField:
+OPNsense\Base\FieldTypes\AutoNumberField:
+  OPNsense\Firewall\FieldTypes\FilterSequenceField:
+OPNsense\Base\FieldTypes\BaseListField:
+  OPNsense\Auth\FieldTypes\GroupMembershipField:
+  OPNsense\Auth\FieldTypes\MemberField:
+  OPNsense\Auth\FieldTypes\PrivField:
+  OPNsense\Base\FieldTypes\AuthenticationServerField:
+  OPNsense\Base\FieldTypes\AuthGroupField:
+  OPNsense\Base\FieldTypes\CertificateField:
+  OPNsense\Base\FieldTypes\ConfigdActionsField:
+  OPNsense\Base\FieldTypes\CountryField:
+  OPNsense\Base\FieldTypes\InterfaceField:
+  OPNsense\Base\FieldTypes\JsonKeyValueStoreField:
+  OPNsense\Base\FieldTypes\ModelRelationField:
+  OPNsense\Base\FieldTypes\NetworkAliasField:
+  OPNsense\Base\FieldTypes\OptionField:
+  OPNsense\Base\FieldTypes\PortField:
+  OPNsense\Base\FieldTypes\ProtocolField:
+  OPNsense\Base\FieldTypes\VirtualIPField:
+  OPNsense\Diagnostics\FieldTypes\InterfaceField:
+  OPNsense\Firewall\FieldTypes\InterfaceField:
+  OPNsense\Firewall\FieldTypes\ScheduleField:
+  OPNsense\Firewall\FieldTypes\TosField:
+  OPNsense\IDS\FieldTypes\PolicyContentField:
+  OPNsense\Interfaces\FieldTypes\BridgeMemberField:
+  OPNsense\Interfaces\FieldTypes\LaggInterfaceField:
+  OPNsense\Interfaces\FieldTypes\VipInterfaceField:
+  OPNsense\Interfaces\FieldTypes\VlanInterfaceField:
+  OPNsense\IPsec\FieldTypes\CharonLogLevelField:
+  OPNsense\IPsec\FieldTypes\IPsecProposalField:
+  OPNsense\IPsec\FieldTypes\PoolsField:
+  OPNsense\OpenVPN\FieldTypes\OpenVPNServerField:
+  OPNsense\Unbound\FieldTypes\UnboundInterfaceField:
+OPNsense\Base\FieldTypes\BooleanField:
+OPNsense\Base\FieldTypes\ContainerField:
+OPNsense\Base\FieldTypes\CSVListField:
+OPNsense\Base\FieldTypes\EmailField:
+OPNsense\Base\FieldTypes\HostnameField:
+  OPNsense\Dnsmasq\FieldTypes\AliasesField:
+OPNsense\Base\FieldTypes\IntegerField:
+  OPNsense\Auth\FieldTypes\GidField:
+  OPNsense\Auth\FieldTypes\UidField:
+  OPNsense\OpenVPN\FieldTypes\VPNIdField:
+OPNsense\Base\FieldTypes\IPPortField:
+OPNsense\Base\FieldTypes\LegacyLinkField:
+OPNsense\Base\FieldTypes\MacAddressField:
+OPNsense\Base\FieldTypes\NetworkField:
+  OPNsense\Dnsmasq\FieldTypes\DomainIPField:
+  OPNsense\Dnsmasq\FieldTypes\RangeAddressField:
+OPNsense\Base\FieldTypes\NumericField:
+OPNsense\Base\FieldTypes\TextField:
+  OPNsense\Auth\FieldTypes\ExpiresField:
+  OPNsense\Auth\FieldTypes\StoreB64Field:
+  OPNsense\Base\FieldTypes\Base64Field:
+  OPNsense\Base\FieldTypes\DescriptionField:
+  OPNsense\Base\FieldTypes\UpdateOnlyTextField:
+  OPNsense\Interfaces\FieldTypes\VipNetworkField:
+OPNsense\Base\FieldTypes\UniqueIdField:
+OPNsense\Base\FieldTypes\UrlField:
+OPNsense\Diagnostics\FieldTypes\HostField:
+OPNsense\Firewall\FieldTypes\AliasContentField:
+OPNsense\Firewall\FieldTypes\AliasNameField:
+OPNsense\Firewall\FieldTypes\GroupNameField:
+OPNsense\Interfaces\FieldTypes\LinkAddressField:
+OPNsense\IPsec\FieldTypes\IKEAddressField:
+OPNsense\Kea\FieldTypes\KeaPoolsField:
+OPNsense\OpenVPN\FieldTypes\RemoteHostField:
