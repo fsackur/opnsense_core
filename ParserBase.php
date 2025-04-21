@@ -20,6 +20,7 @@ use InvalidArgumentException;
 use ReflectionClass;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use ReflectionException;
 
 $DEFAULT_SOURCE_DIR = "/usr/local/opnsense/mvc/app";
 
@@ -70,9 +71,14 @@ abstract class ParsedBase {
 abstract class Registry {
     private static ReflectionClass $generic_class;
     private static ReflectionClass $root_class;
-    private static array $registry = array();
+    private static array $registry = [];
+    private static array $schema_registry = [];
 
     public static function init(ReflectionClass $generic_class, ReflectionClass $root_class) {
+        $generic_base_name = "OPNsense\OpenApi\Parsing\ParsedBase";
+        if (!$generic_class->isSubclassOf($generic_base_name)) {
+            throw new ReflectionException("$generic_class->name is not a $generic_base_name");
+        }
         static::$generic_class = $generic_class;
         static::$root_class = $root_class;
     }
@@ -97,6 +103,10 @@ abstract class Registry {
 
         $obj = static::$generic_class->newInstance($rclass, $parent);
         static::$registry[$name] = $obj;
+
+        $translator = static::$generic_class->getMethod("get_schema_name");
+        $schema_name = $translator->invoke(null, $name);
+        static::$schema_registry[$schema_name] = $obj;
     }
 
     public static function get(string $name) {
@@ -112,17 +122,21 @@ abstract class Registry {
 
 
 class Parser {
+    public string $base_path;
     private ReflectionClass $generic_class;
     private ReflectionClass $root_class;
     private ReflectionClass $registry;
     private string $path_regex;
+    private array $class_names = [];
 
     public function __construct(
+        string $base_path,
         ReflectionClass $generic_class,
         ReflectionClass $root_class,
         ReflectionClass $registry,
         string $path_regex,
     ) {
+        $this->base_path = $base_path;
         $this->generic_class = $generic_class;
         $this->root_class = $root_class;
         $this->registry = $registry;
@@ -130,8 +144,12 @@ class Parser {
         $registry->getMethod("init")->invoke(null, $generic_class, $root_class);
     }
 
-    public function find_classes(string $base_path) {
-        $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($base_path));
+    public function find_classes() {
+        if ($this->class_names) {
+            return $this->class_names;
+        }
+
+        $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->base_path));
         $class_names = array();
 
         foreach ($rii as $file) {
@@ -147,6 +165,7 @@ class Parser {
             $class_names[] = $class_name;
         }
 
+        $this->class_names = $class_names;
         return $class_names;
     }
 
@@ -159,23 +178,35 @@ class Parser {
         }
     }
 
-    public function get_all($base_path)
+    public function get_all()
     {
-        $class_names = $this->find_classes($base_path);
+        $class_names = $this->find_classes();
         $this->register_classes($class_names);
 
         $dump = $this->registry->getMethod("dump");
         return $dump->invoke(null);
     }
 
-    public function get($class_name)
+    public function get(string $class_name)
     {
-        $register = $this->registry->getMethod("register");
-        $rclass = new ReflectionClass($class_name);
-        $register->invoke(null, $rclass);
+        $this->register_classes([$class_name]);
 
         $get = $this->registry->getMethod("get");
         return $get->invoke(null, $class_name);
+    }
+
+    public function get_by_schema_name(string $schema_name)
+    {
+        $class_names = $this->find_classes();
+        $translator = $this->generic_class->getMethod("get_schema_name");
+        $get = $this->registry->getMethod("get");
+
+        foreach ($class_names as $class_name) {
+            $name = $translator->invoke(null, $class_name);
+            if ($name === $schema_name) {
+                return $get->invoke(null, $class_name);
+            }
+        }
     }
 }
 
@@ -241,6 +272,16 @@ function dump_json($data, $output_file = null, $pretty = false)
     } else {
         echo $json;
     }
+}
+
+function load_json($input_file = null, $associative = true)
+{
+    $depth = 512;
+    $flags = JSON_THROW_ON_ERROR;
+
+    $fd = fopen($input_file, "r") or die("Failed to open '" . $input_file . "'");
+    $json = fread($fd, filesize($input_file));
+    return json_decode($json, $associative, $depth, $flags);
 }
 
 

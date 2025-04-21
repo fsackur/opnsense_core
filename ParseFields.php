@@ -40,13 +40,14 @@ class FieldRegistry extends Registry {}
 
 $base_path = $config->__get("application")->modelsDir;
 $parser = new Parser(
+    $base_path,
     new ReflectionClass(Field::class),
     new ReflectionClass(BaseField::class),
     new ReflectionClass(FieldRegistry::class),
     $path_regex = "/FieldTypes\/\w+\.php/",
 );
 
-$fields = $parser->get_all($base_path);
+$fields = $parser->get_all();
 
 $output_file = "fields.json";
 dump_json($fields, $output_file, true);

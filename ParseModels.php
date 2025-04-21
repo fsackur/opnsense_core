@@ -49,96 +49,6 @@ function convert_pcre_to_ecma_regex(string $pattern) {
 
 
 class Field {
-    private static array $EXAMPLES = [
-        "OPNsense\\Auth\\FieldTypes\\ApiKeyField" => "l5NS9+rPKAb2LseJZzdCnY/BXpIHtGgjaVTWiFkquRD04c78mUExMo3y1fwhv6QO",
-        "OPNsense\\Auth\\FieldTypes\\UsernameField" => "hopper",
-        // "OPNsense\\Base\\FieldTypes\\ArrayField" => "",
-        //   "OPNsense\\Core\\FieldTypes\\TunableField" => "",
-        //   "OPNsense\\Firewall\\FieldTypes\\AliasField" => "",
-        //   "OPNsense\\Firewall\\FieldTypes\\FilterRuleField" => "",
-        //   "OPNsense\\Firewall\\FieldTypes\\GroupField" => "",
-        //   "OPNsense\\Firewall\\FieldTypes\\SourceNatRuleField" => "",
-        //   "OPNsense\\IDS\\FieldTypes\\PolicyRulesField" => "",
-        //   "OPNsense\\Interfaces\\FieldTypes\\NeighborField" => "",
-        //   "OPNsense\\Interfaces\\FieldTypes\\VipField" => "",
-        //   "OPNsense\\IPsec\\FieldTypes\\ConnnectionField" => "",
-        //   "OPNsense\\IPsec\\FieldTypes\\SPDField" => "",
-        //   "OPNsense\\IPsec\\FieldTypes\\VTIField" => "",
-        //   "OPNsense\\OpenVPN\\FieldTypes\\InstanceField" => "",
-        //   "OPNsense\\Routing\\FieldTypes\\GatewayField" => "",
-        //   "OPNsense\\Trust\\FieldTypes\\CAsField" => "",
-        //   "OPNsense\\Trust\\FieldTypes\\CertificatesField" => "",
-        //   "OPNsense\\Wireguard\\FieldTypes\\ClientField" => "",
-        //   "OPNsense\\Wireguard\\FieldTypes\\ServerField" => "",
-        "OPNsense\\Base\\FieldTypes\\AutoNumberField" => 99,
-        //   "OPNsense\\Firewall\\FieldTypes\\FilterSequenceField" => "99",
-        // "OPNsense\\Base\\FieldTypes\\BaseListField" => "",
-          "OPNsense\\Auth\\FieldTypes\\GroupMembershipField" => "docker,libvirt",
-          "OPNsense\\Auth\\FieldTypes\\MemberField" => "hopper,billj",
-          "OPNsense\\Auth\\FieldTypes\\PrivField" => "logon",
-          "OPNsense\\Base\\FieldTypes\\AuthenticationServerField" => "luna,krb01",
-          "OPNsense\\Base\\FieldTypes\\AuthGroupField" => "vpn_users",
-          "OPNsense\\Base\\FieldTypes\\CertificateField" => "",
-          "OPNsense\\Base\\FieldTypes\\ConfigdActionsField" => "configctl template reload openapi",
-          "OPNsense\\Base\\FieldTypes\\CountryField" => "NL",
-          "OPNsense\\Base\\FieldTypes\\InterfaceField" => "opt99",
-          "OPNsense\\Base\\FieldTypes\\JsonKeyValueStoreField" => "/bin/bash",
-        //   "OPNsense\\Base\\FieldTypes\\ModelRelationField" => "",
-          "OPNsense\\Base\\FieldTypes\\NetworkAliasField" => "rfc1918",
-        //   "OPNsense\\Base\\FieldTypes\\OptionField" => "",
-          "OPNsense\\Base\\FieldTypes\\PortField" => "853",
-          "OPNsense\\Base\\FieldTypes\\ProtocolField" => "TCP",
-        //   "OPNsense\\Base\\FieldTypes\\VirtualIPField" => "",
-        //   "OPNsense\\Diagnostics\\FieldTypes\\InterfaceField" => "",
-        //   "OPNsense\\Firewall\\FieldTypes\\InterfaceField" => "",
-        //   "OPNsense\\Firewall\\FieldTypes\\ScheduleField" => "",
-        //   "OPNsense\\Firewall\\FieldTypes\\TosField" => "",
-        //   "OPNsense\\IDS\\FieldTypes\\PolicyContentField" => "",
-        //   "OPNsense\\Interfaces\\FieldTypes\\BridgeMemberField" => "",
-        //   "OPNsense\\Interfaces\\FieldTypes\\LaggInterfaceField" => "",
-        //   "OPNsense\\Interfaces\\FieldTypes\\VipInterfaceField" => "",
-        //   "OPNsense\\Interfaces\\FieldTypes\\VlanInterfaceField" => "",
-          "OPNsense\\IPsec\\FieldTypes\\CharonLogLevelField" => 3,
-        //   "OPNsense\\IPsec\\FieldTypes\\IPsecProposalField" => "",
-        //   "OPNsense\\IPsec\\FieldTypes\\PoolsField" => "",
-        //   "OPNsense\\OpenVPN\\FieldTypes\\OpenVPNServerField" => "",
-        //   "OPNsense\\Unbound\\FieldTypes\\UnboundInterfaceField" => "",
-        "OPNsense\\Base\\FieldTypes\\BooleanField" => 1,
-        // "OPNsense\\Base\\FieldTypes\\ContainerField" => ,
-        "OPNsense\\Base\\FieldTypes\\CSVListField" => "",
-        "OPNsense\\Base\\FieldTypes\\EmailField" => "billj@opnsense.local",
-        "OPNsense\\Base\\FieldTypes\\HostnameField" => "luna.opnsense.local",
-          "OPNsense\\Dnsmasq\\FieldTypes\\AliasesField" => "pluto.opnsense.local",
-        "OPNsense\\Base\\FieldTypes\\IntegerField" => 99,
-          "OPNsense\\Auth\\FieldTypes\\GidField" => 1000,
-          "OPNsense\\Auth\\FieldTypes\\UidField" => 1000,
-          "OPNsense\\OpenVPN\\FieldTypes\\VPNIdField" => 1,
-        "OPNsense\\Base\\FieldTypes\\IPPortField" => "10.0.10.12:3128",
-        "OPNsense\\Base\\FieldTypes\\LegacyLinkField" => 1,
-        "OPNsense\\Base\\FieldTypes\\MacAddressField" => "99:de:ad:be:ef:99",
-        "OPNsense\\Base\\FieldTypes\\NetworkField" => "10.0.202.1",
-          "OPNsense\\Dnsmasq\\FieldTypes\\DomainIPField" => "10.0.200.16",
-          "OPNsense\\Dnsmasq\\FieldTypes\\RangeAddressField" => "10.0.200.1-10.0.200.50",
-        "OPNsense\\Base\\FieldTypes\\NumericField" => 25.1,
-        // "OPNsense\\Base\\FieldTypes\\TextField" => "randomstring",
-        //   "OPNsense\\Auth\\FieldTypes\\ExpiresField" => "",
-          "OPNsense\\Auth\\FieldTypes\\StoreB64Field" => "rOKCtR5BXDvkn023",
-          "OPNsense\\Base\\FieldTypes\\Base64Field" => "fqa1hdePiKIY3CVy",
-          "OPNsense\\Base\\FieldTypes\\DescriptionField" => "do stuff",
-          "OPNsense\\Base\\FieldTypes\\UpdateOnlyTextField" => "write once read never",
-          "OPNsense\\Interfaces\\FieldTypes\\VipNetworkField" => "10.12.0.0",
-        "OPNsense\\Base\\FieldTypes\\UniqueIdField" => "deadbeef-dead-beef-dead-beefdeadbeef",
-        "OPNsense\\Base\\FieldTypes\\UrlField" => "https://saturn.opnsense.local",
-        "OPNsense\\Diagnostics\\FieldTypes\\HostField" => "10.0.200.19",
-        "OPNsense\\Firewall\\FieldTypes\\AliasContentField" => "10.0.200.16`",
-        "OPNsense\\Firewall\\FieldTypes\\AliasNameField" => "printservers",
-        "OPNsense\\Firewall\\FieldTypes\\GroupNameField" => "opt7",
-        "OPNsense\\Interfaces\\FieldTypes\\LinkAddressField" => "10.5.0.6",
-        "OPNsense\\IPsec\\FieldTypes\\IKEAddressField" => "10.5.0.0/24,10.0.200.0/24",
-        "OPNsense\\Kea\\FieldTypes\\KeaPoolsField" => "10.0.200.50-10.0.200.240",
-        "OPNsense\\OpenVPN\\FieldTypes\\RemoteHostField" => "71.88.231.157",
-    ];
-
     private BaseField $node;
     private ReflectionClass $class;
     private array $validators;
@@ -160,10 +70,14 @@ class Field {
     }
 
     public function __construct(BaseField $node) {
+        $node->eventPostLoading();
+
         $fakeUuid = "00000000-0000-0000-0000-000000000000";
         $hex = "a-zA-Z0-9";
         $uuidPattern = "/[$hex]{8}-[$hex]{4}-[$hex]{4}-[$hex]{4}-[$hex]{12}/";
-        $reference = preg_replace($uuidPattern, $fakeUuid, $node->__reference);
+        $reference = $node->__reference;
+        if (!$reference) {$reference = "";}
+        // $reference = preg_replace($uuidPattern, $fakeUuid, $reference);
 
         $class = new ReflectionClass($node::class);
         $class->getProperty("internalReference")->setValue($node, $reference);
@@ -189,9 +103,11 @@ class Field {
 
         if ($this->is_ass_array) {
             // refs will be random uuids, but we regex those in the ctor
-            $childNodes = $class->getProperty("internalChildnodes")->getValue($node);
-            $firstKey = array_keys($childNodes)[0];
-            $child = $childNodes[$firstKey];
+            // $childNodes = $class->getProperty("internalChildnodes")->getValue($node);
+            // $firstKey = array_keys($childNodes)[0];
+            // $child = $childNodes[$firstKey];
+
+            $child = $class->getMethod("getTemplateNode")->invoke($node);
 
             $this->children[$fakeUuid] = new Field($child);
         }
@@ -232,7 +148,8 @@ class Field {
             ];
 
             $schema["type"] = "object";
-            $schema["additionalProperties"] = $childSchema;
+            // $schema["additionalProperties"] = $childSchema;
+            $schema["additionalProperties"] = ["type" => "string"];
 
         } elseif ($this->is_container) {
             $childSchemas = [];
@@ -314,41 +231,31 @@ class Field {
             }
         }
 
-        if (!($this->is_ass_array || $this->is_container || $this->is_list)) {
-            if (array_key_exists($this->type, static::$EXAMPLES)) {
-                $example = static::$EXAMPLES[$this->type];
-                $schema["example"] = $example;
-                // $result = $this->validate($example);
-                // if ($result) {
-                //     $schema["x-validation-error"] = $result;
-                // }
-            }
-        }
-
         return $schema;
     }
 
-    public function validate($data) {
+    public function validate(array $data) {
         // if ($this->type !== "OPNsense\OpenVPN\FieldTypes\VPNIdField") {
         //     return;
         // }
-        $field = $this->node;
-        $parent = $field->getParentNode();
+        // $field = $this->node;
+        // $parent = $field->getParentNode();
         // $parentAttrs = $parent->getAttributes();
         // $gp = $parent->getParentNode();
         // $gpAttrs = $gp->getAttributes();
         // $ggp = $gp->getParentNode();
         // $ggpAttrs = $ggp->getAttributes();
-        $attrs = $parent->getAttributes();
+        // $attrs = $parent->getAttributes();
         // var_dump($attrs);
 
-        $this_uuid = $attrs['uuid'];
+        // $this_uuid = $attrs['uuid'];
         // ->getAttributes()['uuid']
         $validation = new \OPNsense\Base\Validation();
-
+        $validators = $this->node->getValidators();
         foreach ($this->node->getValidators() as $item_validator) {
             $validation->add($this->reference, $item_validator);
         }
+        var_dump($validators);
         $validation_data[$this->reference] = $data;
 
         $messages = $validation->validate($validation_data);
@@ -357,12 +264,12 @@ class Field {
         foreach ($messages as $msg) {
             $result[] = $msg->getMessage();
         }
-        return $result;
-        // if ($result) {
-        //     var_dump($result);
-        //     echo json_encode($this);
-        //     // die();
-        // }
+        // return $result;
+        if ($result) {
+            var_dump($result);
+            echo json_encode($this);
+            // die();
+        }
     }
 }
 
@@ -391,22 +298,32 @@ class Model extends ParsedBase {
             $this->reflectionProperties[$prop->name] = $prop;
         }
 
-
         if ($this->is_abstract) {
             return;
         }
-        $this->instance = $rclass->newInstanceWithoutConstructor();
-        $this->init();
+        // $this->instance = $rclass->newInstanceWithoutConstructor();
+        // $this->init();
+
+        $model = $rclass->newInstance();
+        $this->instance = $model;
+        // $this->field = new Field($internalData);
+        $dataProp = $this->reflectionProperties["internalData"];
+        $internalData = $dataProp->getValue($model);
+        $this->field = new Field($internalData);
     }
 
     function init() {
         $class = $this->class;
         $model = $this->instance;
 
+        // $model->Default();
+
         $internalData = new ContainerField();
         $dataProp = $this->reflectionProperties["internalData"];
         $dataProp->setValue($model, $internalData);
         $model_xml = $class->getMethod("getModelXML")->invoke($model);
+
+        (new ReflectionClass(BaseModel::class))->getProperty("internal_mountpoint")->setValue($model, $model_xml->mount);
 
         $config_array = new SimpleXMLElement('<opnsense/>');
         $parseArgs = [&$model_xml->items, &$config_array, &$internalData];
@@ -418,6 +335,14 @@ class Model extends ParsedBase {
     public function getSchema() {
         return $this->field->getSchema();
     }
+
+    public function validate(array $data) {
+        // return $this->field->validate($data);
+        // return $this->instance->getFlatNodes();
+        // return $this->instance->performValidation(true);
+        $this->instance->setNodes($data);
+        // return $this->instance->validate(null, "", true);
+    }
 }
 
 
@@ -426,13 +351,15 @@ class ModelRegistry extends Registry {}
 
 $base_path = $config->__get("application")->modelsDir;
 $parser = new Parser(
+    $base_path,
     new ReflectionClass(Model::class),
     new ReflectionClass(BaseModel::class),
     new ReflectionClass(ModelRegistry::class),
     $path_regex = "/models\/\w+\/\w+\/\w+\.php/",
 );
 
-$models = $parser->get_all($base_path);
+$models = $parser->get_all();
+// var_dump($models);
 
 $output_file = "models.json";
 dump_json($models, $output_file, true);
@@ -444,16 +371,23 @@ dump_json($models, $output_file, true);
 // // $output = $model->field;
 // $output = $model->getSchema();
 
-$schemas = [];
-foreach ($parser->get_all($base_path) as $model) {
-    if ($model->is_abstract) {
-        continue;
-    }
-    $schemas[$model->schema_name] = $model->getSchema();
+// $schemas = [];
+// foreach ($parser->get_all($base_path) as $model) {
+//     if ($model->is_abstract) {
+//         continue;
+//     }
+//     $schemas[$model->schema_name] = $model->getSchema();
+// }
+
+// $output_file = "schemas.json";
+// dump_json($schemas, $output_file, true);
+
+$sample_file = "sample_data.json";
+$samples = load_json($sample_file);
+foreach ($samples as $schema_name => $sample) {
+    $model = $parser->get_by_schema_name($schema_name);
+    $result = $model->validate($sample);
+    var_dump($result);
 }
-
-$output_file = "schemas.json";
-dump_json($schemas, $output_file, true);
-
 
 ?>

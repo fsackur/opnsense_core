@@ -278,13 +278,14 @@ class ControllerRegistry extends Registry {}
 
 $base_path = $config->__get("application")->controllersDir;
 $parser = new Parser(
+    $base_path,
     new ReflectionClass(Controller::class),
     new ReflectionClass(ControllerRootClass::class),
     new ReflectionClass(ControllerRegistry::class),
     $path_regex = "/\/Api\/\w+Controller/",
 );
 
-$controllers = $parser->get_all($base_path);
+$controllers = $parser->get_all();
 dump_json($controllers, $output_file, true);
 
 ?>
