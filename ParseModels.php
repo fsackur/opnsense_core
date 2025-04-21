@@ -19,6 +19,35 @@ use OPNsense\Base\FieldTypes\ContainerField;
 require_once(dirname(__FILE__) . '/ParserBase.php');
 
 
+/**
+ * This is not comprehensive, but it should cover the majority of cases in the source code.
+ * Case-insensitve flags are supported by ECMA, but not by OpenApi, so we strip those.
+ * See https://gist.github.com/CMCDragonkai/6c933f4a7d713ef712145c5eb94a1816
+ * @param string $pattern PCRE pattern, as supported by preg_match etc
+ * @return string ECMA-compatible pattern
+ */
+
+function convert_pcre_to_ecma_regex(string $pattern) {
+    $orig = $pattern;
+    $flags = [];
+    while ($pattern[-1] !== $pattern[0]) {
+        $flags[] = $pattern[-1];
+        $pattern = substr($pattern, 0, -1);
+    }
+    if ($flags) {
+        $f = implode(',', $flags);
+        trigger_error("Stripped regex flags $f from '$orig'", E_USER_WARNING);
+    }
+
+    // strip the PHP delimiters
+    $pattern = substr($pattern, 1, -1);
+    // '\x{00A0}' => '\u00A0'
+    $pattern = preg_replace("/\\\x\\{(....)\}/", "\\u\\1", $pattern);
+
+    return $pattern;
+}
+
+
 class Field {
     private static array $EXAMPLES = [
         "OPNsense\\Auth\\FieldTypes\\ApiKeyField" => "l5NS9+rPKAb2LseJZzdCnY/BXpIHtGgjaVTWiFkquRD04c78mUExMo3y1fwhv6QO",
@@ -275,14 +304,10 @@ class Field {
         ) {
             $mask = $this->class->getProperty("internalMask")->getValue($this->node);
             if ($mask) {
-                $pattern = preg_replace("/\w+$/", "", $mask);
-                // if ($pattern !== $mask) {trigger_error("Stripped regex flags from '$mask'", E_USER_WARNING);}
-                $pattern = substr($pattern, 1, -1);
-
-                // '\x{00A0}' => \u00A0
-                $pattern = preg_replace("/\\\x\\{(....)\}/", "\\u\\1", $pattern);
+                $pattern = convert_pcre_to_ecma_regex($mask);
 
                 if ($this->is("OPNsense\Base\FieldTypes\CSVListField")) {
+                    // TODO: handle anchors
                     $pattern = "($pattern,)*$pattern";
                 }
                 $schema["pattern"] = $pattern;
