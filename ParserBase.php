@@ -204,7 +204,7 @@ class Parser {
         foreach ($class_names as $class_name) {
             $name = $translator->invoke(null, $class_name);
             if ($name === $schema_name) {
-                return $get->invoke(null, $class_name);
+                return $this->get($class_name);
             }
         }
     }
@@ -212,7 +212,7 @@ class Parser {
 
 
 //region argparse
-$opts = getopt("s:o:mzx", ["source-folder:", "output-file:", ""]);
+$opts = getopt("s:o:mzgx", ["source-folder:", "output-file:", ""]);
 if (array_key_exists("o", $opts)) {
     $output_file = $opts["o"];
 } elseif (array_key_exists("output-file", $opts)) {
@@ -264,6 +264,9 @@ if (array_key_exists("z", $opts)) {
 } else {
     $schema_file = null;
 }
+
+$should_generate_examples = array_key_exists("g", $opts);
+
 if (array_key_exists("x", $opts)) {
     $example_file = "examples.json";
 } else {

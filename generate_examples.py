@@ -180,8 +180,7 @@ def generate_string(pattern: str | None = None) -> str:
     except re.PatternError as ex:
         ex.add_note(pattern)
         raise ex.with_traceback(None)
-    generator = ReadableRegexGenerator(Deterministic("OPNsense"))
-    # generator = RegexGenerator(Deterministic("OPNsense"))
+    generator = ReadableRegexGenerator(Deterministic(str(pattern)))
     value = generator.generate(pattern)
     assert compiled.match(value), f"generated string '{value}' does not match '{pattern}'"
     return value
@@ -327,8 +326,8 @@ if __name__ == "__main__":
 
     # model_name = "opnsense.auth.group"
     # model_name = "opnsense.cron.cron"
-    model_name = "opnsense.captiveportal.captiveportal"
-    schemas = {model_name: schemas[model_name]}
+    # model_name = "opnsense.captiveportal.captiveportal"
+    # schemas = {model_name: schemas[model_name]}
 
     examples = generate_examples(schemas, should_validate=args.validate)
 

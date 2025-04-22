@@ -134,22 +134,23 @@ class Field {
             $schema["patternProperties"] = $childSchemas;
 
         } elseif ($this->is_list) {
-            $childSchema = [
-                "type" => "object",
-                "additionalProperties" => false,
-                "required" => ["value", "selected"],
-                "properties" => [
-                    "value" => ["type" => "string"],
-                    "selected" => [
-                        "type" => "integer",
-                        "enum" => [0, 1]
-                    ],
-                ],
-            ];
+            // $childSchema = [
+            //     "type" => "object",
+            //     "additionalProperties" => false,
+            //     "required" => ["value", "selected"],
+            //     "properties" => [
+            //         "value" => ["type" => "string"],
+            //         "selected" => [
+            //             "type" => "integer",
+            //             "enum" => [0, 1]
+            //         ],
+            //     ],
+            // ];
 
-            $schema["type"] = "object";
+            // $schema["type"] = "object";
             // $schema["additionalProperties"] = $childSchema;
-            $schema["additionalProperties"] = ["type" => "string"];
+
+            $schema["type"] = "string";
 
         } elseif ($this->is_container) {
             $childSchemas = [];
@@ -341,7 +342,7 @@ class Model extends ParsedBase {
         // return $this->instance->getFlatNodes();
         // return $this->instance->performValidation(true);
         $this->instance->setNodes($data);
-        // return $this->instance->validate(null, "", true);
+        return $this->instance->validate(null, "", true);
     }
 }
 
@@ -366,7 +367,9 @@ if ($model_file) {
 
 if ($schema_file) {
     $schemas = [];
-    foreach ($parser->get_all() as $model) {
+    $models = $parser->get_all();
+    // $models = [$parser->get_by_schema_name("opnsense.captiveportal.captiveportal")];
+    foreach ($models as $model) {
         if ($model->is_abstract) {
             continue;
         }
@@ -375,12 +378,31 @@ if ($schema_file) {
     dump_json($schemas, $schema_file, true);
 }
 
+if ($should_generate_examples) {
+    $py_output = null;
+    $py_result_code = null;
+    $command = "./generate_examples.py";
+    exec($command, $py_output, $py_result_code);
+
+    if ($py_result_code) {
+        var_dump($py_output);
+        throw new Exception($command);
+    }
+}
+
+
+$example_file = "examples.json";
 if ($example_file) {
     $examples = load_json($example_file);
     foreach ($examples as $schema_name => $example) {
         $model = $parser->get_by_schema_name($schema_name);
         $result = $model->validate($example);
-        var_dump($result);
+        // if ($result) {
+        //     var_dump($result);
+        // }
+        foreach ($result as $ref => $msg) {
+            echo "$ref: $msg\n";
+        }
     }
 }
 
