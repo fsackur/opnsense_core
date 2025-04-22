@@ -36,7 +36,7 @@ function convert_pcre_to_ecma_regex(string $pattern) {
     }
     if ($flags) {
         $f = implode(',', $flags);
-        trigger_error("Stripped regex flags $f from '$orig'", E_USER_WARNING);
+        // trigger_error("Stripped regex flags $f from '$orig'", E_USER_WARNING);
     }
 
     // strip the PHP delimiters
@@ -358,36 +358,30 @@ $parser = new Parser(
     $path_regex = "/models\/\w+\/\w+\/\w+\.php/",
 );
 
-$models = $parser->get_all();
-// var_dump($models);
 
-$output_file = "models.json";
-dump_json($models, $output_file, true);
-// echo $parser->export($base_path, $output_file, true);
+if ($model_file) {
+    $models = $parser->get_all();
+    dump_json($models, $model_file, true);
+}
 
-// $model = $parser->get("OPNsense\\Firewall\\Alias");
+if ($schema_file) {
+    $schemas = [];
+    foreach ($parser->get_all() as $model) {
+        if ($model->is_abstract) {
+            continue;
+        }
+        $schemas[$model->schema_name] = $model->getSchema();
+    }
+    dump_json($schemas, $schema_file, true);
+}
 
-// // $output = $model;
-// // $output = $model->field;
-// $output = $model->getSchema();
-
-// $schemas = [];
-// foreach ($parser->get_all($base_path) as $model) {
-//     if ($model->is_abstract) {
-//         continue;
-//     }
-//     $schemas[$model->schema_name] = $model->getSchema();
-// }
-
-// $output_file = "schemas.json";
-// dump_json($schemas, $output_file, true);
-
-$sample_file = "sample_data.json";
-$samples = load_json($sample_file);
-foreach ($samples as $schema_name => $sample) {
-    $model = $parser->get_by_schema_name($schema_name);
-    $result = $model->validate($sample);
-    var_dump($result);
+if ($example_file) {
+    $examples = load_json($example_file);
+    foreach ($examples as $schema_name => $example) {
+        $model = $parser->get_by_schema_name($schema_name);
+        $result = $model->validate($example);
+        var_dump($result);
+    }
 }
 
 ?>

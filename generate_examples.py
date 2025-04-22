@@ -11,9 +11,28 @@ Calls `parse_endpoints.py` and `parse_xml_models.py` if their cached JSON output
 import argparse
 import os
 import re
+from re._constants import (
+    ANY,
+    AT,
+    BRANCH,
+    CATEGORY,
+    CATEGORY_DIGIT,
+    CATEGORY_WORD,
+    IN,
+    LITERAL,
+    MAX_REPEAT,
+    MAXREPEAT,
+    MIN_REPEAT,
+    NEGATE,
+    NOT_LITERAL,
+    RANGE,
+    SUBPATTERN,
+)
 import json
 import pathlib
 import yaml
+import random
+from niltype import Nil, Nilable
 from collections import defaultdict
 from typing import *
 from pprint import pformat
@@ -23,12 +42,15 @@ from openapi_schema_validator.validators import OAS31Validator
 from openapi_schema_validator import validate as _validate
 from jsonschema.exceptions import _Error, SchemaError, ValidationError, best_match
 from regex_string_generator import generate_string as _generate_string
+from blahblah import RegexGenerator, Random
 
+_T = TypeVar("_T")
+SeedType = TypeVar("SeedType", int, float, str, bytes, bytearray)
 
 SchemaType = Literal["string"] | Literal["number"] | Literal["integer"] | Literal["boolean"] | Literal["array"] | Literal["object"]
 SchemaPrimitive = str | int | float | bool | None
 SchemaDict =  Dict[str, "SchemaPrimitive | SchemaDict | List[SchemaPrimitive | SchemaDict]"]
-Sample = SchemaPrimitive | List["Sample"] | Dict[str, "Sample"]
+Example = SchemaPrimitive | List["Example"] | Dict[str, "Example"]
 
 class Schema(TypedDict):
     type: SchemaType
@@ -56,11 +78,11 @@ TYPE_CASTERS = dict(
 FAKE_UUID = "00000000-0000-0000-0000-000000000000"
 
 
-def partial(**kwargs) -> Dict[str, Sample]:
+def partial(**kwargs) -> Dict[str, Example]:
     return dict(__PARTIAL__=True, **kwargs)
 
 
-SAMPLES: Dict[str, Sample] = {
+EXAMPLES: Dict[str, Example] = {
     # f"opnsense.cron.cron.jobs.job.{FAKE_UUID}.minutes": 42,
     # f"opnsense.cron.cron.jobs.job.{FAKE_UUID}.hours": 3,
     # f"opnsense.cron.cron.jobs.job.{FAKE_UUID}.days": 3,
@@ -74,121 +96,80 @@ SAMPLES: Dict[str, Sample] = {
         weekdays="3",
     )
 }
-# private static array $EXAMPLES = [
-#         "OPNsense\\Auth\\FieldTypes\\ApiKeyField" => "l5NS9+rPKAb2LseJZzdCnY/BXpIHtGgjaVTWiFkquRD04c78mUExMo3y1fwhv6QO",
-#         "OPNsense\\Auth\\FieldTypes\\UsernameField" => "hopper",
-#         // "OPNsense\\Base\\FieldTypes\\ArrayField" => "",
-#         //   "OPNsense\\Core\\FieldTypes\\TunableField" => "",
-#         //   "OPNsense\\Firewall\\FieldTypes\\AliasField" => "",
-#         //   "OPNsense\\Firewall\\FieldTypes\\FilterRuleField" => "",
-#         //   "OPNsense\\Firewall\\FieldTypes\\GroupField" => "",
-#         //   "OPNsense\\Firewall\\FieldTypes\\SourceNatRuleField" => "",
-#         //   "OPNsense\\IDS\\FieldTypes\\PolicyRulesField" => "",
-#         //   "OPNsense\\Interfaces\\FieldTypes\\NeighborField" => "",
-#         //   "OPNsense\\Interfaces\\FieldTypes\\VipField" => "",
-#         //   "OPNsense\\IPsec\\FieldTypes\\ConnnectionField" => "",
-#         //   "OPNsense\\IPsec\\FieldTypes\\SPDField" => "",
-#         //   "OPNsense\\IPsec\\FieldTypes\\VTIField" => "",
-#         //   "OPNsense\\OpenVPN\\FieldTypes\\InstanceField" => "",
-#         //   "OPNsense\\Routing\\FieldTypes\\GatewayField" => "",
-#         //   "OPNsense\\Trust\\FieldTypes\\CAsField" => "",
-#         //   "OPNsense\\Trust\\FieldTypes\\CertificatesField" => "",
-#         //   "OPNsense\\Wireguard\\FieldTypes\\ClientField" => "",
-#         //   "OPNsense\\Wireguard\\FieldTypes\\ServerField" => "",
-#         "OPNsense\\Base\\FieldTypes\\AutoNumberField" => 99,
-#         //   "OPNsense\\Firewall\\FieldTypes\\FilterSequenceField" => "99",
-#         // "OPNsense\\Base\\FieldTypes\\BaseListField" => "",
-#           "OPNsense\\Auth\\FieldTypes\\GroupMembershipField" => "docker,libvirt",
-#           "OPNsense\\Auth\\FieldTypes\\MemberField" => "hopper,billj",
-#           "OPNsense\\Auth\\FieldTypes\\PrivField" => "logon",
-#           "OPNsense\\Base\\FieldTypes\\AuthenticationServerField" => "luna,krb01",
-#           "OPNsense\\Base\\FieldTypes\\AuthGroupField" => "vpn_users",
-#           "OPNsense\\Base\\FieldTypes\\CertificateField" => "",
-#           "OPNsense\\Base\\FieldTypes\\ConfigdActionsField" => "configctl template reload openapi",
-#           "OPNsense\\Base\\FieldTypes\\CountryField" => "NL",
-#           "OPNsense\\Base\\FieldTypes\\InterfaceField" => "opt99",
-#           "OPNsense\\Base\\FieldTypes\\JsonKeyValueStoreField" => "/bin/bash",
-#         //   "OPNsense\\Base\\FieldTypes\\ModelRelationField" => "",
-#           "OPNsense\\Base\\FieldTypes\\NetworkAliasField" => "rfc1918",
-#         //   "OPNsense\\Base\\FieldTypes\\OptionField" => "",
-#           "OPNsense\\Base\\FieldTypes\\PortField" => "853",
-#           "OPNsense\\Base\\FieldTypes\\ProtocolField" => "TCP",
-#         //   "OPNsense\\Base\\FieldTypes\\VirtualIPField" => "",
-#         //   "OPNsense\\Diagnostics\\FieldTypes\\InterfaceField" => "",
-#         //   "OPNsense\\Firewall\\FieldTypes\\InterfaceField" => "",
-#         //   "OPNsense\\Firewall\\FieldTypes\\ScheduleField" => "",
-#         //   "OPNsense\\Firewall\\FieldTypes\\TosField" => "",
-#         //   "OPNsense\\IDS\\FieldTypes\\PolicyContentField" => "",
-#         //   "OPNsense\\Interfaces\\FieldTypes\\BridgeMemberField" => "",
-#         //   "OPNsense\\Interfaces\\FieldTypes\\LaggInterfaceField" => "",
-#         //   "OPNsense\\Interfaces\\FieldTypes\\VipInterfaceField" => "",
-#         //   "OPNsense\\Interfaces\\FieldTypes\\VlanInterfaceField" => "",
-#           "OPNsense\\IPsec\\FieldTypes\\CharonLogLevelField" => 3,
-#         //   "OPNsense\\IPsec\\FieldTypes\\IPsecProposalField" => "",
-#         //   "OPNsense\\IPsec\\FieldTypes\\PoolsField" => "",
-#         //   "OPNsense\\OpenVPN\\FieldTypes\\OpenVPNServerField" => "",
-#         //   "OPNsense\\Unbound\\FieldTypes\\UnboundInterfaceField" => "",
-#         "OPNsense\\Base\\FieldTypes\\BooleanField" => 1,
-#         // "OPNsense\\Base\\FieldTypes\\ContainerField" => ,
-#         "OPNsense\\Base\\FieldTypes\\CSVListField" => "",
-#         "OPNsense\\Base\\FieldTypes\\EmailField" => "billj@opnsense.local",
-#         "OPNsense\\Base\\FieldTypes\\HostnameField" => "luna.opnsense.local",
-#           "OPNsense\\Dnsmasq\\FieldTypes\\AliasesField" => "pluto.opnsense.local",
-#         "OPNsense\\Base\\FieldTypes\\IntegerField" => 99,
-#           "OPNsense\\Auth\\FieldTypes\\GidField" => 1000,
-#           "OPNsense\\Auth\\FieldTypes\\UidField" => 1000,
-#           "OPNsense\\OpenVPN\\FieldTypes\\VPNIdField" => 1,
-#         "OPNsense\\Base\\FieldTypes\\IPPortField" => "10.0.10.12:3128",
-#         "OPNsense\\Base\\FieldTypes\\LegacyLinkField" => 1,
-#         "OPNsense\\Base\\FieldTypes\\MacAddressField" => "99:de:ad:be:ef:99",
-#         "OPNsense\\Base\\FieldTypes\\NetworkField" => "10.0.202.1",
-#           "OPNsense\\Dnsmasq\\FieldTypes\\DomainIPField" => "10.0.200.16",
-#           "OPNsense\\Dnsmasq\\FieldTypes\\RangeAddressField" => "10.0.200.1-10.0.200.50",
-#         "OPNsense\\Base\\FieldTypes\\NumericField" => 25.1,
-#         // "OPNsense\\Base\\FieldTypes\\TextField" => "randomstring",
-#         //   "OPNsense\\Auth\\FieldTypes\\ExpiresField" => "",
-#           "OPNsense\\Auth\\FieldTypes\\StoreB64Field" => "rOKCtR5BXDvkn023",
-#           "OPNsense\\Base\\FieldTypes\\Base64Field" => "fqa1hdePiKIY3CVy",
-#           "OPNsense\\Base\\FieldTypes\\DescriptionField" => "do stuff",
-#           "OPNsense\\Base\\FieldTypes\\UpdateOnlyTextField" => "write once read never",
-#           "OPNsense\\Interfaces\\FieldTypes\\VipNetworkField" => "10.12.0.0",
-#         "OPNsense\\Base\\FieldTypes\\UniqueIdField" => "deadbeef-dead-beef-dead-beefdeadbeef",
-#         "OPNsense\\Base\\FieldTypes\\UrlField" => "https://saturn.opnsense.local",
-#         "OPNsense\\Diagnostics\\FieldTypes\\HostField" => "10.0.200.19",
-#         "OPNsense\\Firewall\\FieldTypes\\AliasContentField" => "10.0.200.16`",
-#         "OPNsense\\Firewall\\FieldTypes\\AliasNameField" => "printservers",
-#         "OPNsense\\Firewall\\FieldTypes\\GroupNameField" => "opt7",
-#         "OPNsense\\Interfaces\\FieldTypes\\LinkAddressField" => "10.5.0.6",
-#         "OPNsense\\IPsec\\FieldTypes\\IKEAddressField" => "10.5.0.0/24,10.0.200.0/24",
-#         "OPNsense\\Kea\\FieldTypes\\KeaPoolsField" => "10.0.200.50-10.0.200.240",
-#         "OPNsense\\OpenVPN\\FieldTypes\\RemoteHostField" => "71.88.231.157",
-#     ];
 
-def get_sample(path: str, sample: Dict[str, Sample] = SAMPLES):
-    keys = [k for k in sample.keys() if path.startswith(k)]
+
+def get_example(path: str, example: Dict[str, Example] = EXAMPLES):
+    keys = [k for k in example.keys() if path.startswith(k)]
     if not keys:
         raise KeyError(path)
 
     key = sorted(keys, key=len)[-1]
-    _sample = sample[key]
-    is_dict = isinstance(_sample, Mapping)
+    _example = example[key]
+    is_dict = isinstance(_example, Mapping)
 
     if key == path:
-        if is_dict and _sample.get("__PARTIAL__"):
+        if is_dict and _example.get("__PARTIAL__"):
             raise KeyError(path)
-        return _sample
+        return _example
 
     if not is_dict:
         raise KeyError(path)
 
     sub_path = re.sub(fr"^{re.escape(key)}\.", "", path)
     try:
-        return get_sample(sub_path, _sample)
+        return get_example(sub_path, _example)
     except KeyError:
         raise KeyError(path)
 
 
-def generate_string(pattern: str | None = None, *args, **kwargs) -> str:
+class Deterministic(Random):
+    def __init__(self, seed: str):
+        self.set_seed(seed)
+
+    def random_int(self, start: int, end: int) -> int:
+        start, end = sorted([start, end])
+        diff = end - start
+        if diff > 0:
+            diff = int(pow(diff, 0.4))
+            return start + diff
+        return start
+
+    def random_str(self, length: int, alphabet: str) -> str:
+        chars = list(alphabet)
+        for m in ("isprintable", "isascii", "isalnum", "isalpha"):
+            method = getattr(str, m)
+            _chars = [char for char in chars if method(char)]
+            if _chars: chars = _chars
+        return "".join(random.choice(chars) for _ in range(length))
+
+
+class ReadableRegexGenerator(RegexGenerator):
+    def _generate_any(self, value: None) -> str:
+        return self._random.random_choice(self._alphabet["word"])
+
+    def _generate_in(self, value: List[Any]) -> str:
+        (opcode, val), *other = value
+        if opcode == NEGATE:
+            return self._generate_not_in(other)
+
+        alphabet = ""
+        for opcode, val in value:
+            if opcode == LITERAL:
+                alphabet += chr(val)
+            elif opcode == RANGE:
+                start, end = val
+                if end > 255:
+                    end = self._random.random_int(start, end)
+                alphabet += "".join(chr(i) for i in (range(start, end)))
+            elif opcode == CATEGORY:
+                alphabet += self._get_category_alphabet(val)
+            else:
+                print(f"{self.__class__.__name__}: Not generating a readable string for {opcode}: deferring to super")
+                return super(ReadableRegexGenerator, self)._generate_in(value)
+        return self._random.random_str(1, alphabet)
+
+
+def generate_string(pattern: str | None = None) -> str:
     if pattern == "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$":
         return FAKE_UUID
     elif pattern is None:
@@ -199,7 +180,9 @@ def generate_string(pattern: str | None = None, *args, **kwargs) -> str:
     except re.PatternError as ex:
         ex.add_note(pattern)
         raise ex.with_traceback(None)
-    value = _generate_string(pattern, *args, **kwargs)
+    generator = ReadableRegexGenerator(Deterministic("OPNsense"))
+    # generator = RegexGenerator(Deterministic("OPNsense"))
+    value = generator.generate(pattern)
     assert compiled.match(value), f"generated string '{value}' does not match '{pattern}'"
     return value
 
@@ -219,10 +202,10 @@ def make(
     example: Optional[SchemaPrimitive] = None,
     description: Optional[str] = None,
     **kwargs,
-) -> Sample:
+) -> Example:
 
     try:
-        return get_sample(path)
+        return get_example(path)
     except KeyError:
         pass
 
@@ -278,17 +261,17 @@ def make(
 
 
 
-def generate_samples(schemas: Dict[str, Schema], should_validate: bool = False) -> Dict[str, Schema]:
-    samples = {}
+def generate_examples(schemas: Dict[str, Schema], should_validate: bool = False) -> Dict[str, Schema]:
+    examples = {}
     for model_name, schema in schemas.items():
         if should_validate:
             validate_schema(schema, model_name)
-        sample = make(model_name, **schema)
+        example = make(model_name, **schema)
         if should_validate:
-            validate(schema, sample, model_name)
-        samples[model_name] = sample
+            validate(schema, example, model_name)
+        examples[model_name] = example
 
-    return samples
+    return examples
 
 
 def validate_schema(schema: Schema, model_name: str = ""):
@@ -310,7 +293,7 @@ def format(instance) -> str:
     return formatted
 
 
-def validate(schema: Schema, instance: Sample, model_name: str = ""):
+def validate(schema: Schema, instance: Example, model_name: str = ""):
     try:
         print(f"Validating {format(instance)} against {model_name}...", end=" ")
         validator = OAS31Validator(schema)
@@ -328,7 +311,7 @@ def validate(schema: Schema, instance: Sample, model_name: str = ""):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="generate an OpenApi spec")
     parser.add_argument("-s", "--schema-file", default="schemas.json")
-    parser.add_argument("-o", "--output-file", default="sample_data.json")
+    parser.add_argument("-o", "--output-file", default="examples.json")
     parser.add_argument("-m", "--module", help="filter endpoints by module")
     parser.add_argument("-c", "--controller", help="filter endpoints by controller name (excluding Controller suffix)")
     parser.add_argument("--cache-folder", default=None)
@@ -344,11 +327,12 @@ if __name__ == "__main__":
 
     # model_name = "opnsense.auth.group"
     # model_name = "opnsense.cron.cron"
-    # schemas = {model_name: schemas[model_name]}
+    model_name = "opnsense.captiveportal.captiveportal"
+    schemas = {model_name: schemas[model_name]}
 
-    samples = generate_samples(schemas, should_validate=args.validate)
+    examples = generate_examples(schemas, should_validate=args.validate)
 
-    content = json.dumps(samples, indent=4)
+    content = json.dumps(examples, indent=4)
 
     pathlib.Path(output_file).parent.mkdir(parents=True, exist_ok=True)
     with open(output_file, "w") as file:

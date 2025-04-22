@@ -212,7 +212,7 @@ class Parser {
 
 
 //region argparse
-$opts = getopt("s:o:", ["source-folder:", "output-file:"]);
+$opts = getopt("s:o:mzx", ["source-folder:", "output-file:", ""]);
 if (array_key_exists("o", $opts)) {
     $output_file = $opts["o"];
 } elseif (array_key_exists("output-file", $opts)) {
@@ -252,6 +252,22 @@ while ($contrib_base != "/") {
 }
 if (!$contrib_dir) {
     throw new InvalidArgumentException("Could not find 'contrib' folder in any parent of " . $app_dir);
+}
+
+if (array_key_exists("m", $opts)) {
+    $model_file = "models.json";
+} else {
+    $model_file = null;
+}
+if (array_key_exists("z", $opts)) {
+    $schema_file = "schemas.json";
+} else {
+    $schema_file = null;
+}
+if (array_key_exists("x", $opts)) {
+    $example_file = "examples.json";
+} else {
+    $example_file = null;
 }
 //endregion argparse
 

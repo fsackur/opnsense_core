@@ -2,19 +2,21 @@
 
 import re, sys
 
-pattern = '^(((?:\\*|[0-7])(,{1}|-{1}|\\/{1}|$))+)$'
-# pattern = '^(((?:\\*|[0-7])(,\1|-\1|\/\1|$))+)$'
-# pattern = "^((?:\*|[1-5][0-9]|0[0-9]|[0-9])(,\1|-\1|\/\1|$))+$"
-# ^((?:\*|[1-5][0-9]|0[0-9]|[0-9])(,\1|-\1|\/\1|$))+$
-# for arg in sys.argv[1:]:
-#     arg = arg[1:-1]
-#     if re.sub(pattern, "", arg):
-#         print(arg)
+
+alphabet = f"abcdefgheAJKLGH09673\t\n{chr(7)}😚🇦🇱"
+# for char in alphabet:
+#     print(char)
+
+chars = []
+for m in ("isalpha", "isalnum", "isascii", "isprintable"):
+    method = getattr(str, m)
+    chars = [char for char in alphabet if method(char)]
+    if chars:
+        break
+
+if not chars:
+    chars = alphabet.split()
 
 
-print("foooo")
-
-# re.compile(pattern)
-# compile(f"r'{pattern}'", "schemas.json", "eval")
-
-print(sorted(["abc", "kjgkjhgkjg", "d"], key=len))
+chars = [char for char in alphabet if char.isascii()]
+print(len(chars), chars)
