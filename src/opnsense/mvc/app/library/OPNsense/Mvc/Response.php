@@ -108,10 +108,7 @@ class Response
             @fclose($this->content);
         } elseif (!empty($this->content)) {
             if (is_array($this->content)) {
-                // echo json_encode($this->content);
-                $json = json_encode($this->content);
-                $json = str_replace("[]", "{}", $json);
-                echo $json;
+                echo json_encode($this->content);
             } else {
                 echo $this->content;
             }

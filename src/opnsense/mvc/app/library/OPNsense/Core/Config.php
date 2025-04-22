@@ -735,7 +735,6 @@ class Config extends Singleton
      */
     public function save($revision = null, $backup = true)
     {
-        return;
         $this->checkvalid();
         $time = microtime(true);
         // update revision information ROOT.revision tag, align timestamp to backup output

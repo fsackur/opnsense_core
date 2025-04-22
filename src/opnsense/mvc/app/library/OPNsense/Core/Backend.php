@@ -71,11 +71,6 @@ class Backend
      */
     public function configdStream($event, $detach = false, $connect_timeout = 10, $poll_timeout = 2)
     {
-        if (strpos($event, "template reload") !== false) {$ret = "OK";} else {$ret = "STUBBED RESPONSE";}
-        $ret = $ret . chr(0) . chr(0) . chr(0);
-//
-        $stream = fopen('php://memory', 'r+'); fwrite($stream, $ret); rewind($stream); return $stream;
-
         // wait until socket exist for a maximum of $connect_timeout
         $simulate_mode = false;
         if (!file_exists($this->configdSocket) && (!empty((string)(new AppConfig())->globals->simulate_mode))) {
