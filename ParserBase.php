@@ -131,6 +131,13 @@ class Parser {
     private string $path_regex;
     private array $class_names = [];
 
+    /**
+     * @param string $base_path path to mvc/app
+     * @param \ReflectionClass $generic_class subclass of ParsedBase
+     * @param \ReflectionClass $root_class the base of the inheritance tree in src
+     * @param \ReflectionClass $registry static class to parse parents before children
+     * @param string $path_regex should match the path relative to mvc/app, including leading slash
+     */
     public function __construct(
         string $base_path,
         ReflectionClass $generic_class,
@@ -158,10 +165,12 @@ class Parser {
             if (
                 $file->isDir() ||
                 !str_ends_with($file, ".php") ||
-                !preg_match($this->path_regex, $file)
-            ) {continue;}
+                !preg_match($this->path_regex, $file, $matches)
+            ) {
+                continue;
+            }
 
-            $rel_path = preg_replace("/.*(?=OPNsense)/", "", $file);
+            $rel_path = preg_replace("/^\w+\//", "", $matches[0]);
             $class_name = preg_replace("/\.php$/", "", $rel_path);
             $class_name = preg_replace("/\//", "\\", $class_name);
             $class_names[] = $class_name;

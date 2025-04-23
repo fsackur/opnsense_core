@@ -282,7 +282,7 @@ $parser = new Parser(
     new ReflectionClass(Controller::class),
     new ReflectionClass(ControllerRootClass::class),
     new ReflectionClass(ControllerRegistry::class),
-    $path_regex = "/\/Api\/\w+Controller/",
+    $path_regex = "/controllers\/\w+\/\w+\/Api\/\w+Controller\.php/",
 );
 
 $controllers = $parser->get_all();
