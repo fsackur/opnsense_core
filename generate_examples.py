@@ -327,6 +327,7 @@ if __name__ == "__main__":
     # model_name = "opnsense.auth.group"
     # model_name = "opnsense.cron.cron"
     # model_name = "opnsense.captiveportal.captiveportal"
+    # model_name = "opnsense.cron.cron"
     # schemas = {model_name: schemas[model_name]}
 
     examples = generate_examples(schemas, should_validate=args.validate)
