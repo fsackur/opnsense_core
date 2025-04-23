@@ -26,11 +26,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// FOO
-
 namespace OPNsense\Core;
 
-use Exception;
 use OPNsense\Core\AppConfig;
 use OPNsense\Core\Syslog;
 
@@ -74,9 +71,6 @@ class Backend
      */
     public function configdStream($event, $detach = false, $connect_timeout = 10, $poll_timeout = 2)
     {
-        // echo "configd: $event\n";
-        // die();
-
         // wait until socket exist for a maximum of $connect_timeout
         $simulate_mode = false;
         if (!file_exists($this->configdSocket) && (!empty((string)(new AppConfig())->globals->simulate_mode))) {
@@ -152,15 +146,11 @@ class Backend
      */
     public function configdRun($event, $detach = false, $timeout = 120, $connect_timeout = 10)
     {
-        $stream = $this->configdStream($event, $detach, $connect_timeout);
-        return $this->processStream($stream, $event, $timeout);
-    }
-
-    public function processStream($stream, $event, $timeout)
-    {
         $endOfStream = chr(0) . chr(0) . chr(0);
         $errorOfStream = 'Execute error';
         $resp = '';
+
+        $stream = $this->configdStream($event, $detach, $connect_timeout);
 
         // read response data
         $starttime = time();
@@ -186,23 +176,10 @@ class Backend
             strlen($resp) >= strlen($errorOfStream) &&
             substr($resp, 0, strlen($errorOfStream)) == $errorOfStream
         ) {
-            $output = null;
-        } else {
-            $output = str_replace($endOfStream, '', $resp);
+            return null;
         }
 
-        // if ($output === null) {
-        //     $escaped = "\"\"";
-        // } else {
-        //     $escaped = json_encode(trim($output));
-        // }
-        // echo "    \"$event\": $escaped,\n";
-        echo "[$event]\n";
-        echo "$output\n";
-
-        die();
-
-        return $output;
+        return str_replace($endOfStream, '', $resp);
     }
 
     /**
