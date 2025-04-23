@@ -147,7 +147,6 @@ function finish_mocks() {
     }
 
     if ($should_trace) {
-        echo "path: $mockPath\n";
         dump_mocks(MockBackendBase::$calls, $mockPath);
     }
 }
@@ -163,8 +162,7 @@ require $app_dir . "/config/loader.php";
 @ini_set('memory_limit', "512M");
 
 
-$TEST_MODEL = "OPNsense\\Auth\\User";
-
+// $TEST_MODEL = "OPNsense\\Auth\\User";
 
 
 ?>

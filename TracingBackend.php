@@ -12,15 +12,24 @@ class TracingBackend extends MockBackendBase
     {
         $timeout = 120;
 
+        echo "$event\n";
+
         $stream = parent::configdStream($event, $detach, $connect_timeout, $poll_timeout);
 
         if ($stream === null) {
-            $output = null;
+            $backend_output = null;
         } else {
-            $output = $this->processStream($stream, $event, $timeout);
+            if (!stream_get_meta_data($stream)["seekable"]) {
+                $seekable_stream = fopen('php://memory','r+');
+                stream_copy_to_stream($stream, $seekable_stream);
+                $stream = $seekable_stream;
+                rewind($stream);
+            }
+
+            $backend_output = $this->processStream($stream, $event, $timeout);
             rewind($stream);
         }
-        static::$calls[$event] = $output;
+        static::$calls[$event] = $backend_output;
 
         return $stream;
     }
