@@ -4,6 +4,7 @@ namespace OPNsense\OpenApi\Parsing;
 
 use Error;
 use Exception;
+use OPNsense\Base\FieldTypes\AuthGroupField;
 use OPNsense\Base\FieldTypes\CSVListField;
 use Reflection;
 use ReflectionClass;
@@ -129,7 +130,17 @@ class Field {
         $schema = [];
         $schema["x-type"] = $this->type;
 
-        if ($this->is_ass_array) {
+
+        if (
+            $this->is("OPNsense\Base\FieldTypes\ModelRelationField") ||
+            $this->is("OPNsense\Base\FieldTypes\JsonKeyValueStoreField") ||
+            $this->is("OPNsense\Base\FieldTypes\ConfigdActionsField") ||
+            $this->is("OPNsense\Firewall\FieldTypes\ScheduleField")
+        ) {
+            $schema["type"] = "string";
+            $schema["enum"] = ["TODO"];
+
+        } elseif ($this->is_ass_array) {
             $childSchemas = [];
             foreach ($this->children as $prop => $child) {
                 $childSchemas[$uuidPattern] = $child->getSchema();
@@ -174,14 +185,79 @@ class Field {
             $schema["properties"] = $childSchemas;
 
         } elseif ($this->is_enum) {
-            $options = $this->class->getProperty("internalOptionList")->getValue($this->node);
-            $schema["type"] = "string";
-            $schema["enum"] = array_keys($options);
+            $childSchemas = [];
+
+            $optionProp = $this->class->getProperty("internalOptionList");
+            $options = array_keys($optionProp->getValue($this->node));
+
+            $stringOptions = [];
+            $first = null;
+            $last = null;
+            foreach ($options as $option) {
+                if (is_numeric($option)) {
+                    if ($first === null) {
+                        $first = $option;
+                        $last = $option;
+                    } else {
+                        if ($option == $last + 1) {
+                            $last = $option;
+                        } else {
+                            $stringOptions = $options;
+                            $first = null;
+                            $last = null;
+                            break;
+                        }
+
+                    }
+                } else {
+                    $stringOptions[] = $option;
+                }
+            }
+
+            if ($last !== null) {
+                $childSchemas[] = [
+                    "x-type" => $this->type,
+                    "type" => "integer",
+                    "minimum" => $first,
+                    "maximum" => $last,
+                ];
+            } elseif ($first !== null) {
+                $stringOptions[] = $first;
+            }
+
+            if (count($stringOptions)) {
+                $childSchemas[] = [
+                    "x-type" => $this->type,
+                    "type" => "string",
+                    "enum" => $stringOptions,
+                ];
+            }
+
+            if (count($childSchemas) == 1) {
+                $schema = $childSchemas[0];
+            } else {
+                $schema = ["oneOf" => $childSchemas];
+            }
+
+            // if ($this->is("OPNsense\\Base\\FieldTypes\\PortField")) {
+            //     $schema["type"] = "integer";
+            //     $first = $options[0];
+            //     $last = $options[array_key_last($options)];
+
+            //     if (is_numeric($first) && is_numeric($last)) {
+            //         $schema["minimum"] = $first;
+            //         $schema["maximum"] = $last;
+            //     } else {
+            //         throw new Exception("fuck you");
+            //     }
+            // } else {
+            //     $schema["type"] = "string";
+            //     $schema["enum"] = $options;
+            // }
 
         } elseif ($this->is("OPNsense\Base\FieldTypes\BooleanField")) {
             $schema["type"] = "integer";  // because fuck you, that's why
             $schema["enum"] = [0, 1];
-            $schema["description"] = "boolean";
 
         // } elseif ($this instanceof IntegerField || $this instanceof AutoNumberField) {
         } elseif ($this->is("OPNsense\Base\FieldTypes\IntegerField")) {
@@ -274,7 +350,7 @@ class Model extends ParsedBase {
             return;
         }
 
-        echo "$rclass->name\n";
+        // echo "$rclass->name\n";
         $model = $rclass->newInstance();
         $this->instance = $model;
 
