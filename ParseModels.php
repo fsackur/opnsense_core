@@ -16,7 +16,8 @@ use OPNsense\Base\BaseModel;
 use OPNsense\Base\FieldTypes\BaseField;
 use OPNsense\Base\FieldTypes\ContainerField;
 
-require_once(dirname(__FILE__) . '/ParserBase.php');
+require_once __DIR__ . '/ParserBase.php';
+require_once __DIR__ . '/MockBackendBase.php';
 
 
 /**
@@ -296,6 +297,9 @@ class Model extends ParsedBase {
 class ModelRegistry extends Registry {}
 
 
+setup_mocks();
+
+
 $base_path = $config->__get("application")->modelsDir;
 $parser = new Parser(
     $base_path,
@@ -307,18 +311,25 @@ $parser = new Parser(
 
 
 if ($model_file) {
-    // $models = $parser->get_all();
-    $models = ["opnsense.core.hasync" => $parser->get("OPNsense\Core\Hasync")];
+    if (isset($TEST_MODEL)) {
+        $model = $parser->get($TEST_MODEL);
+        $models = [$model->schema_name => $model];
+    } else {
+        $models = $parser->get_all();
+    }
+
     dump_json($models, $model_file, true);
 }
 
 if ($schema_file) {
-    $schemas = [];
     if (isset($TEST_MODEL)) {
-        $models = [$parser->get_by_schema_name($TEST_MODEL)];
+        $model = $parser->get($TEST_MODEL);
+        $models = [$model->schema_name => $model];
     } else {
         $models = $parser->get_all();
     }
+
+    $schemas = [];
     foreach ($models as $model) {
         if ($model->is_abstract) {
             continue;
@@ -343,9 +354,12 @@ if ($should_generate_examples) {
 
 if ($example_file) {
     $examples = load_json($example_file);
+
     if (isset($TEST_MODEL)) {
-        $examples = [$TEST_MODEL => $examples[$TEST_MODEL]];
+        $model = $parser->get($TEST_MODEL);
+        $examples = [$model->schema_name => $examples[$model->schema_name]];
     }
+
     $results = [];
     foreach ($examples as $schema_name => $example) {
         $model = $parser->get_by_schema_name($schema_name);
@@ -360,7 +374,11 @@ if ($example_file) {
     }
     $c1 = count($results);
     $c2 = count($examples);
-    echo "$c1 validation error(s) from $c2 model(s)\n";
+    $errMsg = "$c1 validation error(s) from $c2 model(s)";
+    echo "$errMsg\n";
 }
+
+
+finish_mocks();
 
 ?>

@@ -119,7 +119,38 @@ if (array_key_exists("x", $opts)) {
 //endregion argparse
 
 
-require_once dirname(__FILE__) . '/MockBackend.php';
+require_once __DIR__ . '/MockBackendBase.php';
+MockBackendBase::setAppDir($app_dir);
+
+$mockPath = __DIR__ . "/backend_mocks.txt";
+
+function setup_mocks() {
+    global $mockPath, $should_trace;
+
+    if (!isset($should_trace)) {
+        return;
+    }
+
+    if ($should_trace) {
+        require_once __DIR__ . '/TracingBackend.php';
+    } else {
+        require_once __DIR__ . '/MockBackend.php';
+        MockBackendBase::$calls = load_mocks($mockPath);
+    }
+}
+
+function finish_mocks() {
+    global $mockPath, $should_trace;
+
+    if (!isset($should_trace)) {
+        return;
+    }
+
+    if ($should_trace) {
+        echo "path: $mockPath\n";
+        dump_mocks(MockBackendBase::$calls, $mockPath);
+    }
+}
 
 
 $config = require $app_dir . "/config/config.php";
@@ -131,12 +162,8 @@ require $app_dir . "/config/loader.php";
 
 @ini_set('memory_limit', "512M");
 
-// can't pass args in vscode debugger...
-// $model_file = "models.json";
-// $schema_file = "schemas.json";
-// $should_generate_examples = true;
-// $example_file = "examples.json";
-// $TEST_MODEL = "opnsense.auth.user";
+
+$TEST_MODEL = "OPNsense\\Auth\\User";
 
 
 
