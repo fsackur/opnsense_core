@@ -273,6 +273,7 @@ class Model extends ParsedBase {
             return;
         }
 
+        echo "$rclass->name\n";
         $model = $rclass->newInstance();
         $this->instance = $model;
 
@@ -306,7 +307,8 @@ $parser = new Parser(
 
 
 if ($model_file) {
-    $models = $parser->get_all();
+    // $models = $parser->get_all();
+    $models = ["opnsense.core.hasync" => $parser->get("OPNsense\Core\Hasync")];
     dump_json($models, $model_file, true);
 }
 

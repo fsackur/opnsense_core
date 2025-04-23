@@ -30,6 +30,7 @@
 
 namespace OPNsense\Core;
 
+use Exception;
 use OPNsense\Core\AppConfig;
 use OPNsense\Core\Syslog;
 
@@ -73,8 +74,9 @@ class Backend
      */
     public function configdStream($event, $detach = false, $connect_timeout = 10, $poll_timeout = 2)
     {
-        echo "configd: $event\n";
+        // echo "configd: $event\n";
         // die();
+
         // wait until socket exist for a maximum of $connect_timeout
         $simulate_mode = false;
         if (!file_exists($this->configdSocket) && (!empty((string)(new AppConfig())->globals->simulate_mode))) {
@@ -189,7 +191,16 @@ class Backend
             $output = str_replace($endOfStream, '', $resp);
         }
 
-        echo "$event => $output";
+        // if ($output === null) {
+        //     $escaped = "\"\"";
+        // } else {
+        //     $escaped = json_encode(trim($output));
+        // }
+        // echo "    \"$event\": $escaped,\n";
+        echo "[$event]\n";
+        echo "$output\n";
+
+        die();
 
         return $output;
     }

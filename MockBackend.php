@@ -30,12 +30,11 @@ namespace OPNsense\Core;
 
 use OPNsense\Core\AppConfig;
 use OPNsense\Core\Syslog;
+use OPNsense\Core\Backend as RealBackend;
 
-/**
- * Class Backend
- * @package OPNsense\Core
- */
-class Backend
+use Mockery;
+
+class TracingBackend extends RealBackend
 {
     /**
      * @var string location of configd socket
@@ -71,7 +70,6 @@ class Backend
      */
     public function configdStream($event, $detach = false, $connect_timeout = 10, $poll_timeout = 2)
     {
-        echo "$event\n"; # $detach $connect_timeout $poll_timeout\n";
         // wait until socket exist for a maximum of $connect_timeout
         $simulate_mode = false;
         if (!file_exists($this->configdSocket) && (!empty((string)(new AppConfig())->globals->simulate_mode))) {
@@ -220,3 +218,5 @@ class Backend
         }
     }
 }
+
+// class Backend extends MockBackend {}

@@ -21,14 +21,10 @@ use Backend;
 use Loader;
 
 
-// require_once dirname(__FILE__) . '/MockBackend.php';
-
-
 $DEFAULT_SOURCE_DIR = "/usr/local/opnsense/mvc/app";
 
 
-function dump_json($data, $output_file = null, $pretty = false)
-{
+function dump_json($data, $output_file = null, $pretty = false) {
     $json_flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
     if ($pretty) {
         $json_flags = $json_flags | JSON_PRETTY_PRINT;
@@ -46,8 +42,7 @@ function dump_json($data, $output_file = null, $pretty = false)
 }
 
 
-function load_json($input_file = null, $associative = true)
-{
+function load_json($input_file = null, $associative = true) {
     $depth = 512;
     $flags = JSON_THROW_ON_ERROR;
 
@@ -59,7 +54,7 @@ function load_json($input_file = null, $associative = true)
 
 
 //region argparse
-$opts = getopt("s:o:mzgx", ["source-folder:", "output-file:", ""]);
+$opts = getopt("s:o:tmzgx", ["source-folder:", "output-file:", ""]);
 if (array_key_exists("o", $opts)) {
     $output_file = $opts["o"];
 } elseif (array_key_exists("output-file", $opts)) {
@@ -101,6 +96,8 @@ if (!$contrib_dir) {
     throw new InvalidArgumentException("Could not find 'contrib' folder in any parent of " . $app_dir);
 }
 
+$should_trace = array_key_exists("t", $opts);
+
 if (array_key_exists("m", $opts)) {
     $model_file = "models.json";
 } else {
@@ -120,6 +117,9 @@ if (array_key_exists("x", $opts)) {
     $example_file = null;
 }
 //endregion argparse
+
+
+require_once dirname(__FILE__) . '/MockBackend.php';
 
 
 $config = require $app_dir . "/config/config.php";
