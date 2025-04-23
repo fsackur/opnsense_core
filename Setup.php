@@ -133,6 +133,10 @@ function setup_mocks() {
 
     if ($should_trace) {
         require_once __DIR__ . '/TracingBackend.php';
+        $service_tempfile = "/tmp/configdmodelfield.data";
+        if (file_exists($service_tempfile)) {
+            unlink($service_tempfile);
+        }
     } else {
         require_once __DIR__ . '/MockBackend.php';
         MockBackendBase::$calls = load_mocks($mockPath);

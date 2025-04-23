@@ -32,6 +32,10 @@ import json
 import pathlib
 import yaml
 import random
+import sys
+
+sys.path.append("/usr/local/opnsense/scripts/OPNsense/OpenApi/lib/site-packages")
+
 from niltype import Nil, Nilable
 from collections import defaultdict
 from typing import *
@@ -41,7 +45,6 @@ from uuid import uuid4
 from openapi_schema_validator.validators import OAS31Validator
 from openapi_schema_validator import validate as _validate
 from jsonschema.exceptions import _Error, SchemaError, ValidationError, best_match
-from regex_string_generator import generate_string as _generate_string
 from blahblah import RegexGenerator, Random
 
 _T = TypeVar("_T")
