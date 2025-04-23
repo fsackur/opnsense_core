@@ -84,7 +84,7 @@ class Field {
         $class->getProperty("internalReference")->setValue($node, $reference);
         $node->setAttributeValue("uuid", $fakeUuid);
 
-        echo "$class->name\n";
+        // echo "$class->name\n";
 
         $this->node = $node;
         $this->class = $class;

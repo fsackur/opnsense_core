@@ -26,6 +26,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+// FOO
+
 namespace OPNsense\Core;
 
 use OPNsense\Core\AppConfig;
@@ -71,6 +73,8 @@ class Backend
      */
     public function configdStream($event, $detach = false, $connect_timeout = 10, $poll_timeout = 2)
     {
+        echo "configd: $event\n";
+        // die();
         // wait until socket exist for a maximum of $connect_timeout
         $simulate_mode = false;
         if (!file_exists($this->configdSocket) && (!empty((string)(new AppConfig())->globals->simulate_mode))) {
@@ -146,11 +150,15 @@ class Backend
      */
     public function configdRun($event, $detach = false, $timeout = 120, $connect_timeout = 10)
     {
+        $stream = $this->configdStream($event, $detach, $connect_timeout);
+        return $this->processStream($stream, $event, $timeout);
+    }
+
+    public function processStream($stream, $event, $timeout)
+    {
         $endOfStream = chr(0) . chr(0) . chr(0);
         $errorOfStream = 'Execute error';
         $resp = '';
-
-        $stream = $this->configdStream($event, $detach, $connect_timeout);
 
         // read response data
         $starttime = time();
@@ -176,10 +184,14 @@ class Backend
             strlen($resp) >= strlen($errorOfStream) &&
             substr($resp, 0, strlen($errorOfStream)) == $errorOfStream
         ) {
-            return null;
+            $output = null;
+        } else {
+            $output = str_replace($endOfStream, '', $resp);
         }
 
-        return str_replace($endOfStream, '', $resp);
+        echo "$event => $output";
+
+        return $output;
     }
 
     /**
