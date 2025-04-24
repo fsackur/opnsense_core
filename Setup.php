@@ -89,7 +89,7 @@ if (!$app_dir) {
 $contrib_base = $app_dir;
 while ($contrib_base != "/") {
     $contrib_dir = realpath($contrib_base . "/contrib");
-    if ($contrib_dir) {break;}
+    if ($contrib_dir && realpath($contrib_base . "/contrib/tzdata/iso3166.tab")) {break;}
     $contrib_base = dirname($contrib_base);
 }
 if (!$contrib_dir) {

@@ -191,7 +191,8 @@ def generate_string(pattern: str | None = None) -> str:
 
 def make(
     path: str,
-    type: SchemaType,
+    type: SchemaType | None = None,  # required, but we validate in the body
+    oneOf: List[Schema] | None = None,
     items: Optional["Schema"] = None,
     required: Optional[List[str]] = None,
     properties: Optional[Dict[str, "Schema"]] = None,
@@ -212,6 +213,11 @@ def make(
         pass
 
     try:
+        if type is None:
+            assert oneOf is not None, "must have type or oneOf"
+            assert len(oneOf) > 1, "oneOf cannot be empty"
+            return make(f"{path}.oneOf", **oneOf[0])
+
         if kwargs:
             assert not any(k for k in kwargs if not k.startswith("x-"))
 

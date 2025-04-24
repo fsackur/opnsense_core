@@ -233,7 +233,16 @@ class Field {
                 ];
             }
 
-            if (count($childSchemas) == 1) {
+            if (count($childSchemas) == 0) {
+                // OPNsense\Interfaces\FieldTypes\LaggInterfaceField
+                // OPNsense\Interfaces\FieldTypes\VlanInterfaceField
+                // OPNsense\Base\FieldTypes\InterfaceField
+                // OPNsense\Base\FieldTypes\CertificateField
+                // OPNsense\Base\FieldTypes\VirtualIPField
+                $schema["type"] = "string";
+                $schema["enum"] = ["TODO"];
+                echo "$this->type\n";
+            } elseif (count($childSchemas) == 1) {
                 $schema = $childSchemas[0];
             } else {
                 $schema = ["oneOf" => $childSchemas];
