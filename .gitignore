@@ -17,3 +17,20 @@
 .idea/
 .vscode/
 /src/opnsense/www/.htrouter.php
+
+# dev
+**/__pycache__/**
+.venv
+
+# mock data
+*.json
+*.txt
+*.yml
+!requirements*.txt
+
+# mounted in vm
+/src/share/certs/
+/src/var/run/
+/src/etc/
+**/OPNsense/OpenApi/**
+/src/opnsense/service/conf/actions.d/actions_openapi.conf
