@@ -29,27 +29,26 @@ require_once dirname(__FILE__) . '/Setup.php';
 abstract class ParsedBase {
     protected ReflectionClass $class;
     public string $name;
-    public ?string $schema_name;
+    public ?string $schemaName;
     public ?string $parent;
-    public bool $is_abstract;
+    public bool $isAbstract;
     public string $doc;
 
-    abstract public static function get_schema_name(string $class_name);
+    abstract public static function getSchemaName(string $class_name);
 
     public function __construct(ReflectionClass $rclass, ParsedBase | null $parent)
     {
         $name = $rclass->getName();
-        $is_abstract = $rclass->isAbstract();
-        $schema_name = null;
-        if (!$is_abstract) {
-            $schema_name = static::get_schema_name($name);
+        $isAbstract = $rclass->isAbstract();
+        $schemaName = null;
+        if (!$isAbstract) {
+            $schemaName = static::getSchemaName($name);
         }
 
-        $parent_name = null;
+        $parentName = null;
         $doc = $rclass->getDocComment();
-        if ($parent)
-        {
-            $parent_name = $parent->name;
+        if ($parent) {
+            $parentName = $parent->name;
 
             if (preg_match("/@inheritdoc/", $doc)) {
                 $doc = $parent->doc;
@@ -58,9 +57,9 @@ abstract class ParsedBase {
 
         $this->class = $rclass;
         $this->name = $name;
-        $this->schema_name = $schema_name;
-        $this->parent = $parent_name;
-        $this->is_abstract = $is_abstract;
+        $this->schemaName = $schemaName;
+        $this->parent = $parentName;
+        $this->isAbstract = $isAbstract;
         $this->doc = $doc;
     }
 }
@@ -70,21 +69,23 @@ abstract class ParsedBase {
  * INVARIANT: parent is always registered before child
  */
 abstract class Registry {
-    private static ReflectionClass $generic_class;
-    private static ReflectionClass $root_class;
+    private static ReflectionClass $genericClass;
+    private static ReflectionClass $rootClass;
     private static array $registry = [];
-    private static array $schema_registry = [];
+    private static array $schemaRegistry = [];
 
-    public static function init(ReflectionClass $generic_class, ReflectionClass $root_class) {
-        $generic_base_name = "OPNsense\OpenApi\Parsing\ParsedBase";
-        if (!$generic_class->isSubclassOf($generic_base_name)) {
-            throw new ReflectionException("$generic_class->name is not a $generic_base_name");
+    public static function init(ReflectionClass $genericClass, ReflectionClass $rootClass)
+    {
+        $genericBaseName = "OPNsense\OpenApi\Parsing\ParsedBase";
+        if (!$genericClass->isSubclassOf($genericBaseName)) {
+            throw new ReflectionException("$genericClass->name is not a $genericBaseName");
         }
-        static::$generic_class = $generic_class;
-        static::$root_class = $root_class;
+        static::$genericClass = $genericClass;
+        static::$rootClass = $rootClass;
     }
 
-    public static function register(ReflectionClass $rclass) {
+    public static function register(ReflectionClass $rclass)
+    {
         $name = $rclass->getName();
         if (array_key_exists($name, static::$registry)) {
             return;
@@ -98,74 +99,77 @@ abstract class Registry {
             $parent = null;
         }
 
-        if (!$parent && $rclass != static::$root_class) {
+        if (!$parent && $rclass != static::$rootClass) {
             return;
         }
 
-        $obj = static::$generic_class->newInstance($rclass, $parent);
+        $obj = static::$genericClass->newInstance($rclass, $parent);
         static::$registry[$name] = $obj;
 
-        $translator = static::$generic_class->getMethod("get_schema_name");
-        $schema_name = $translator->invoke(null, $name);
-        static::$schema_registry[$schema_name] = $obj;
+        $translator = static::$genericClass->getMethod("getSchemaName");
+        $schemaName = $translator->invoke(null, $name);
+        static::$schemaRegistry[$schemaName] = $obj;
     }
 
-    public static function get(string $name) {
+    public static function get(string $name)
+    {
         if (array_key_exists($name, static::$registry)) {
             return static::$registry[$name];
         }
     }
 
     public static function dump() {
-        $registry = static::$schema_registry;
+        $registry = static::$schemaRegistry;
         return $registry;
     }
 }
 
 
-class Parser {
-    public string $base_path;
-    private ReflectionClass $generic_class;
-    private ReflectionClass $root_class;
+class Parser
+{
+    public string $basePath;
+    private ReflectionClass $genericClass;
+    private ReflectionClass $rootClass;
     private ReflectionClass $registry;
-    private string $path_regex;
-    private array $class_names = [];
+    private string $pathRegex;
+    private array $classNames = [];
 
     /**
-     * @param string $base_path path to mvc/app
-     * @param \ReflectionClass $generic_class subclass of ParsedBase
-     * @param \ReflectionClass $root_class the base of the inheritance tree in src
+     * @param string $basePath path to mvc/app
+     * @param \ReflectionClass $genericClass subclass of ParsedBase
+     * @param \ReflectionClass $rootClass the base of the inheritance tree in src
      * @param \ReflectionClass $registry static class to parse parents before children
-     * @param string $path_regex should match the path relative to mvc/app, including leading slash
+     * @param string $pathRegex should match the path relative to mvc/app, including leading slash
      */
     public function __construct(
-        string $base_path,
-        ReflectionClass $generic_class,
-        ReflectionClass $root_class,
+        string $basePath,
+        ReflectionClass $genericClass,
+        ReflectionClass $rootClass,
         ReflectionClass $registry,
-        string $path_regex,
+        string $pathRegex,
     ) {
-        $this->base_path = $base_path;
-        $this->generic_class = $generic_class;
-        $this->root_class = $root_class;
+        $this->basePath = $basePath;
+        $this->genericClass = $genericClass;
+        $this->rootClass = $rootClass;
         $this->registry = $registry;
-        $this->path_regex = $path_regex;
-        $registry->getMethod("init")->invoke(null, $generic_class, $root_class);
+        $this->pathRegex = $pathRegex;
+        $registry->getMethod("init")->invoke(null, $genericClass, $rootClass);
     }
 
-    public function find_classes() {
-        if ($this->class_names) {
-            return $this->class_names;
+    public function find_classes()
+    {
+        if ($this->classNames) {
+            return $this->classNames;
         }
 
-        $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->base_path));
+        $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->basePath));
         $class_names = array();
 
         foreach ($rii as $file) {
             if (
                 $file->isDir() ||
                 !str_ends_with($file, ".php") ||
-                !preg_match($this->path_regex, $file, $matches)
+                !preg_match($this->pathRegex, $file, $matches)
             ) {
                 continue;
             }
@@ -176,11 +180,11 @@ class Parser {
             $class_names[] = $class_name;
         }
 
-        $this->class_names = $class_names;
+        $this->classNames = $class_names;
         return $class_names;
     }
 
-    public function register_classes(array $class_names)
+    public function registerClasses(array $class_names)
     {
         $register = $this->registry->getMethod("register");
         foreach ($class_names as $c) {
@@ -189,32 +193,31 @@ class Parser {
         }
     }
 
-    public function get_all()
+    public function getAll()
     {
         $class_names = $this->find_classes();
-        $this->register_classes($class_names);
+        $this->registerClasses($class_names);
 
         $dump = $this->registry->getMethod("dump");
         return $dump->invoke(null);
     }
 
-    public function get(string $class_name)
+    public function get(string $className)
     {
-        $this->register_classes([$class_name]);
+        $this->registerClasses([$className]);
 
         $get = $this->registry->getMethod("get");
-        return $get->invoke(null, $class_name);
+        return $get->invoke(null, $className);
     }
 
-    public function get_by_schema_name(string $schema_name)
+    public function getBySchemaName(string $schemaName)
     {
         $class_names = $this->find_classes();
-        $translator = $this->generic_class->getMethod("get_schema_name");
-        $get = $this->registry->getMethod("get");
+        $translator = $this->genericClass->getMethod("getSchemaName");
 
         foreach ($class_names as $class_name) {
             $name = $translator->invoke(null, $class_name);
-            if ($name === $schema_name) {
+            if ($name === $schemaName) {
                 return $this->get($class_name);
             }
         }

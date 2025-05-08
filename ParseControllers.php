@@ -23,15 +23,17 @@ use ReflectionParameter;
 use ReflectionException;
 use OPNsense\Mvc\Controller as ControllerRootClass;
 
-require_once(dirname(__FILE__) . '/ParserBase.php');
+require_once __DIR__ . '/ParserBase.php';
 
 
-class Parameter {
+class Parameter
+{
     public $name;
     public $has_default;
     public $default;
 
-    public function __construct(ReflectionParameter $rparam) {
+    public function __construct(ReflectionParameter $rparam)
+    {
         $this->name = $rparam->name;
         if ($rparam->isDefaultValueAvailable()) {
             $this->has_default = true;
@@ -43,7 +45,8 @@ class Parameter {
 }
 
 
-class Method {
+class Method
+{
     protected static $BASE_METHOD_HTTP_METHODS = [
         "request->isPost" => "POST",
         "request->hasPost" => "POST",
@@ -161,13 +164,15 @@ class Method {
 }
 
 
-class Controller extends ParsedBase {
+class Controller extends ParsedBase
+{
     public $methods = [];
     public $model;
     public $model_name;
 
-    public static function get_schema_name(string $class_name) {
-        $name = strtolower($class_name);
+    public static function getSchemaName(string $className)
+    {
+        $name = strtolower($className);
         $name = str_replace(["\\api", "controller"], "", $name);
         return str_replace("\\", ".", $name);
     }
@@ -273,19 +278,19 @@ class Controller extends ParsedBase {
 }
 
 
-class ControllerRegistry extends Registry {}
+class ControllerRegistry extends Registry
+{
+}
 
 
-$base_path = $config->__get("application")->controllersDir;
+$basePath = $config->__get("application")->controllersDir;
 $parser = new Parser(
-    $base_path,
+    $basePath,
     new ReflectionClass(Controller::class),
     new ReflectionClass(ControllerRootClass::class),
     new ReflectionClass(ControllerRegistry::class),
-    $path_regex = "/controllers\/\w+\/\w+\/Api\/\w+Controller\.php/",
+    $pathRegex = "/controllers\/\w+\/\w+\/Api\/\w+Controller\.php/",
 );
 
-$controllers = $parser->get_all();
-dump_json($controllers, $output_file, true);
-
-?>
+$controllers = $parser->getAll();
+dump_json($controllers, $outputFile, true);

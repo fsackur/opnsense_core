@@ -9,17 +9,19 @@ use ReflectionParameter;
 use ReflectionException;
 use OPNsense\Base\FieldTypes\BaseField;
 
-require_once(dirname(__FILE__) . '/ParserBase.php');
+require_once __DIR__ . '/ParserBase.php';
 
 
-class Field extends ParsedBase {
+class Field extends ParsedBase
+{
     // public $methods;
     // public $is_array;
     // public $is_container;
     // public $is_required;
 
 
-    public static function get_schema_name(string $class_name) {
+    public static function getSchemaName(string $class_name)
+    {
         return preg_replace("/.*\\\/", "", $class_name);
     }
 
@@ -27,7 +29,7 @@ class Field extends ParsedBase {
     {
         parent::__construct($rclass, $parent);
 
-        if ($this->is_abstract) {
+        if ($this->isAbstract) {
             return;
         }
         // $this->instance = $rclass->newInstance();
@@ -35,21 +37,21 @@ class Field extends ParsedBase {
 }
 
 
-class FieldRegistry extends Registry {}
+class FieldRegistry extends Registry
+{
+}
 
 
-$base_path = $config->__get("application")->modelsDir;
+$basePath = $config->__get("application")->modelsDir;
 $parser = new Parser(
-    $base_path,
+    $basePath,
     new ReflectionClass(Field::class),
     new ReflectionClass(BaseField::class),
     new ReflectionClass(FieldRegistry::class),
-    $path_regex = "/FieldTypes\/\w+\.php/",
+    $pathRegex = "/FieldTypes\/\w+\.php/",
 );
 
-$fields = $parser->get_all();
+$fields = $parser->getAll();
 
-$output_file = "fields.json";
-dump_json($fields, $output_file, true);
-
-?>
+$outputFile = "fields.json";
+dump_json($fields, $outputFile, true);

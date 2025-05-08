@@ -58,28 +58,32 @@ class Field {
     public string $reference;
     public ?string $tag;
     public ?string $default;
-    public bool $is_ass_array;
-    public bool $is_container;
-    public bool $is_list;
-    public bool $is_enum;
-    public bool $is_required;
+    public bool $isAssArray;
+    public bool $isContainer;
+    public bool $isList;
+    public bool $isEnum;
+    public bool $isRequired;
     public array $children = [];
     // public array $options = [];
 
-    private function getValue(string $property) {
+    private function getValue(string $property)
+    {
         if ($this->class->hasProperty($property)) {
             return $this->class->getProperty($property)->getValue($this->node);
         }
     }
 
-    public function __construct(BaseField $node) {
+    public function __construct(BaseField $node)
+    {
         $node->eventPostLoading();
 
         $fakeUuid = "00000000-0000-0000-0000-000000000000";
         $hex = "a-zA-Z0-9";
         $uuidPattern = "/[$hex]{8}-[$hex]{4}-[$hex]{4}-[$hex]{4}-[$hex]{12}/";
         $reference = $node->__reference;
-        if (!$reference) {$reference = "";}
+        if (!$reference) {
+            $reference = "";
+        }
         // $reference = preg_replace($uuidPattern, $fakeUuid, $reference);
 
         $class = new ReflectionClass($node::class);
@@ -95,11 +99,11 @@ class Field {
         $this->reference = $reference;
         $this->tag = $this->getValue("internalXMLTagName");
         $this->default = $this->getValue("internalDefaultValue");
-        $this->is_ass_array = $node->isArrayType();
-        $this->is_container = $node->isContainer();
-        $this->is_list = $this->getValue("internalAsList") || $this->getValue("internalMultiSelect");
-        $this->is_enum = $this->is("OPNsense\Base\FieldTypes\BaseListField");
-        $this->is_required = $node->isRequired();
+        $this->isAssArray = $node->isArrayType();
+        $this->isContainer = $node->isContainer();
+        $this->isList = $this->getValue("internalAsList") || $this->getValue("internalMultiSelect");
+        $this->isEnum = $this->is("OPNsense\Base\FieldTypes\BaseListField");
+        $this->isRequired = $node->isRequired();
 
 
         // doesn't iterate over ArrayField
@@ -107,7 +111,7 @@ class Field {
             $this->children[$key] = new Field($child);
         }
 
-        if ($this->is_ass_array) {
+        if ($this->isAssArray) {
             // refs will be random uuids, but we regex those in the ctor
             // $childNodes = $class->getProperty("internalChildnodes")->getValue($node);
             // $firstKey = array_keys($childNodes)[0];
@@ -119,11 +123,13 @@ class Field {
         }
     }
 
-    public function is(string $className) {
+    public function is(string $className)
+    {
         return $this->type === $className || $this->class->isSubclassOf($className);
     }
 
-    public function getSchema() {
+    public function getSchema()
+    {
         $hex = "a-zA-Z0-9";
         $uuidPattern = "^[$hex]{8}-[$hex]{4}-[$hex]{4}-[$hex]{4}-[$hex]{12}$";
 
@@ -140,7 +146,7 @@ class Field {
             $schema["type"] = "string";
             $schema["enum"] = ["TODO"];
 
-        } elseif ($this->is_ass_array) {
+        } elseif ($this->isAssArray) {
             $childSchemas = [];
             foreach ($this->children as $prop => $child) {
                 $childSchemas[$uuidPattern] = $child->getSchema();
@@ -149,7 +155,7 @@ class Field {
             $schema["additionalProperties"] = false;
             $schema["patternProperties"] = $childSchemas;
 
-        } elseif ($this->is_list) {
+        } elseif ($this->isList) {
             // $childSchema = [
             //     "type" => "object",
             //     "additionalProperties" => false,
@@ -168,12 +174,12 @@ class Field {
 
             $schema["type"] = "string";
 
-        } elseif ($this->is_container) {
+        } elseif ($this->isContainer) {
             $childSchemas = [];
             $required = [];
             foreach ($this->children as $prop => $child) {
                 $childSchemas[$prop] = $child->getSchema();
-                if ($child->is_required && !$child->is("OPNsense\Base\FieldTypes\AutoNumberField")) {
+                if ($child->isRequired && !$child->is("OPNsense\Base\FieldTypes\AutoNumberField")) {
                     $required[] = $prop;
                 }
             }
@@ -184,7 +190,7 @@ class Field {
             }
             $schema["properties"] = $childSchemas;
 
-        } elseif ($this->is_enum) {
+        } elseif ($this->isEnum) {
             $childSchemas = [];
 
             $optionProp = $this->class->getProperty("internalOptionList");
@@ -277,12 +283,16 @@ class Field {
                 $min = $this->getValue("minimum_value");
                 if ($min !== null) {
                     $min = (int) $min;
-                    if ($min !== PHP_INT_MIN) {$schema["minimum"] = $min;}
+                    if ($min !== PHP_INT_MIN) {
+                        $schema["minimum"] = $min;
+                    }
                 }
                 $max = $this->getValue("maximum_value");
                 if ($max !== null) {
                     $max = (int) $max;
-                    if ($max !== PHP_INT_MAX) {$schema["maximum"] = $max;}
+                    if ($max !== PHP_INT_MAX) {
+                        $schema["maximum"] = $max;
+                    }
                 }
             }
 
@@ -297,12 +307,16 @@ class Field {
                 $min = $this->getValue("minimum_value");
                 if ($min !== null) {
                     $min = (float) $min;
-                    if ($min !== -99999999999999.0) {$schema["minimum"] = $min;}
+                    if ($min !== -99999999999999.0) {
+                        $schema["minimum"] = $min;
+                    }
                 }
                 $max = $this->getValue("maximum_value");
                 if ($max !== null) {
                     $max = (float) $max;
-                    if ($max !== 99999999999999.0) {$schema["maximum"] = $max;}
+                    if ($max !== 99999999999999.0) {
+                        $schema["maximum"] = $max;
+                    }
                 }
             }
 
@@ -336,8 +350,9 @@ class Model extends ParsedBase {
     protected array $reflectionProperties = [];
     public Field $field;
 
-    public static function get_schema_name(string $class_name) {
-        $name = strtolower($class_name);
+    public static function getSchemaName(string $className)
+    {
+        $name = strtolower($className);
         return str_replace("\\", ".", $name);
     }
 
@@ -355,7 +370,7 @@ class Model extends ParsedBase {
             $this->reflectionProperties[$prop->name] = $prop;
         }
 
-        if ($this->is_abstract) {
+        if ($this->isAbstract) {
             return;
         }
 
@@ -368,70 +383,74 @@ class Model extends ParsedBase {
         $this->field = new Field($internalData);
     }
 
-    public function getSchema() {
+    public function getSchema()
+    {
         return $this->field->getSchema();
     }
 
-    public function validate(array $data) {
+    public function validate(array $data)
+    {
         $this->instance->setNodes($data);
         return $this->instance->validate(null, "", true);
     }
 }
 
 
-class ModelRegistry extends Registry {}
+class ModelRegistry extends Registry
+{
+}
 
 
 setup_mocks();
 
 
-$base_path = $config->__get("application")->modelsDir;
+$basePath = $config->__get("application")->modelsDir;
 $parser = new Parser(
-    $base_path,
+    $basePath,
     new ReflectionClass(Model::class),
     new ReflectionClass(BaseModel::class),
     new ReflectionClass(ModelRegistry::class),
-    $path_regex = "/models\/\w+\/\w+\/\w+\.php/",
+    $pathRegex = "/models\/\w+\/\w+\/\w+\.php/",
 );
 
 
-if ($model_file) {
+if ($modelFile) {
     if (isset($TEST_MODEL)) {
         $model = $parser->get($TEST_MODEL);
-        $models = [$model->schema_name => $model];
+        $models = [$model->schemaName => $model];
     } else {
-        $models = $parser->get_all();
+        $models = $parser->getAll();
     }
 
-    dump_json($models, $model_file, true);
+    dump_json($models, $modelFile, true);
 }
 
-if ($schema_file) {
+if ($schemaFile) {
     if (isset($TEST_MODEL)) {
         $model = $parser->get($TEST_MODEL);
-        $models = [$model->schema_name => $model];
+        $models = [$model->schemaName => $model];
     } else {
-        $models = $parser->get_all();
+        $models = $parser->getAll();
     }
 
     $schemas = [];
     foreach ($models as $model) {
-        if ($model->is_abstract) {
+        if ($model->isAbstract) {
             continue;
         }
-        $schemas[$model->schema_name] = $model->getSchema();
+        $schemas[$model->schemaName] = $model->getSchema();
     }
-    dump_json($schemas, $schema_file, true);
+    dump_json($schemas, $schemaFile, true);
 }
 
 if ($should_generate_examples) {
-    $py_output = null;
-    $py_result_code = null;
+    $pyOutput = null;
+    $pyResultCode = null;
     $command = "./generate_examples.py";
-    exec($command, $py_output, $py_result_code);
+    exec($command, $pyOutput, $pyResultCode);
 
-    if ($py_result_code) {
-        var_dump($py_output);
+    if ($pyResultCode) {
+        var_dump($pyOutput);
         throw new Exception($command);
     }
 }
@@ -442,15 +461,15 @@ if ($example_file) {
 
     if (isset($TEST_MODEL)) {
         $model = $parser->get($TEST_MODEL);
-        $examples = [$model->schema_name => $examples[$model->schema_name]];
+        $examples = [$model->schemaName => $examples[$model->schemaName]];
     }
 
     $results = [];
-    foreach ($examples as $schema_name => $example) {
-        $model = $parser->get_by_schema_name($schema_name);
-        $model_results = $model->validate($example);
-        foreach ($model_results as $ref => $msg) {
-            $results["$model->schema_name.$ref"] = $msg;
+    foreach ($examples as $schemaName => $example) {
+        $model = $parser->getBySchemaName($schemaName);
+        $modelResults = $model->validate($example);
+        foreach ($modelResults as $ref => $msg) {
+            $results["$model->schemaName.$ref"] = $msg;
         }
     }
 
@@ -465,5 +484,3 @@ if ($example_file) {
 
 
 finish_mocks();
-
-?>
