@@ -52,7 +52,6 @@ class Argument
     }
 }
 
-
 class CliOptions {
     private static Self $instance;
     public readonly string $appDir;
@@ -61,7 +60,7 @@ class CliOptions {
     #[Argument("s:", "source-folder:", "/usr/local/opnsense/mvc/app")]
     public readonly string $sourceFolder;
 
-    #[Argument("o:", "output-folder:", __DIR__)]
+    #[Argument("o:", "output-folder:", __DIR__ . "/output")]
     public readonly string $outputFolder;
 
     #[Argument("t", "trace")]
@@ -76,8 +75,15 @@ class CliOptions {
     #[Argument("x", "generate-examples")]
     public readonly bool $generateExamples;
 
+    public readonly array $models;
+    public readonly string $backendMockFile;
+    public readonly string $modelFile;
+    public readonly string $schemaFile;
+    public readonly string $exampleFile;
 
     private function __construct() {
+        global $argv;
+
         $class = new ReflectionClass(__CLASS__);
         $argProps = [];
         $shortOpts = "";
@@ -106,7 +112,8 @@ class CliOptions {
             }
         }
 
-        $opts = getopt($shortOpts, $longOpts);
+        $restIndex = 0;
+        $opts = getopt($shortOpts, $longOpts, $restIndex);
         foreach ($opts as $arg => $value) {
             $propName = $argProps[$arg];
             if ($value === false) {
@@ -114,6 +121,8 @@ class CliOptions {
             }
             $values[$propName] = $value;
         }
+
+        $this->models = array_slice($argv, $restIndex);
 
         foreach (["sourceFolder", "outputFolder"] as $prop) {
             $path = realpath($values[$prop]);
@@ -153,8 +162,11 @@ class CliOptions {
         }
         $this->contribDir = $contribDir;
 
-        var_dump($this);
 
+        $this->backendMockFile = "$this->outputFolder/backend_mocks.txt";
+        $this->modelFile = "$this->outputFolder/models.json";
+        $this->schemaFile = "$this->outputFolder/schemas.json";
+        $this->exampleFile = "$this->outputFolder/examples.json";
     }
 
     public static function get() {

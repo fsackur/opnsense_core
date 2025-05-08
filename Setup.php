@@ -1,21 +1,8 @@
 <?php
-/**
- * Parse controller classes using reflection, to minimise regex parsing.
- *
- * I do the bare minimum in PHP because a) I don't know PHP and b) type system
- * is not great.
- *
- * Called from `parse_endpoints.py`.
- *
- * USAGE:
- *      php ParseControllers.php [ARGS]
- *
- * ARGS:
- *      -o, --output-file      path to write a JSON file
- */
 
 namespace OPNsense\OpenApi\Parsing;
 
+$service_tempfile = "/tmp/configdmodelfield.data";
 
 function dump_json($data, $output_file = null, $pretty = false) {
     $json_flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
@@ -34,7 +21,6 @@ function dump_json($data, $output_file = null, $pretty = false) {
     }
 }
 
-
 function load_json($input_file = null, $associative = true) {
     $depth = 512;
     $flags = JSON_THROW_ON_ERROR;
@@ -44,47 +30,37 @@ function load_json($input_file = null, $associative = true) {
     return json_decode($json, $associative, $depth, $flags);
 }
 
-
 require_once __DIR__ . "/CliOptions.php";
 $options = CliOptions::get();
 
 require_once __DIR__ . '/MockBackendBase.php';
 MockBackendBase::setAppDir($options->appDir);
 
-$mockPath = "$options->outputFolder/backend_mocks.txt";
-
 function setup_mocks() {
-    global $mockPath, $options;
+    global $service_tempfile, $options;
 
     if ($options->trace) {
         include_once __DIR__ . '/TracingBackend.php';
-        $service_tempfile = "/tmp/configdmodelfield.data";
         if (file_exists($service_tempfile)) {
             unlink($service_tempfile);
         }
     } else {
         include_once __DIR__ . '/MockBackend.php';
-        MockBackendBase::$calls = load_mocks($mockPath);
+        MockBackendBase::$calls = load_mocks($options->backendMockFile);
     }
 }
 
 function finish_mocks() {
-    global $mockPath, $options;
+    global $options;
 
     if ($options->trace) {
-        dump_mocks(MockBackendBase::$calls, $mockPath);
+        dump_mocks(MockBackendBase::$calls, $options->backendMockFile);
     }
 }
 
 
 $config = include "$options->appDir/config/config.php";
-$config->update('globals.config_path', __DIR__ . "/");
+$config->update('globals.config_path', "$options->outputFolder/");
 $config->update('application.contribDir', $options->contribDir);
-
-set_include_path($contrib_dir);
+set_include_path($options->contribDir);
 require_once "$options->appDir/config/loader.php";
-
-// $TEST_MODEL = "OPNsense\\Auth\\User";
-
-
-?>

@@ -23,10 +23,7 @@
 .venv
 
 # mock data
-*.json
-*.txt
-*.yml
-!requirements*.txt
+output/**
 
 # mounted in vm
 /src/share/certs/

@@ -320,6 +320,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="generate an OpenApi spec")
     parser.add_argument("-s", "--schema-file", default="schemas.json")
     parser.add_argument("-o", "--output-file", default="examples.json")
+    parser.add_argument("models", action="extend", nargs="*")
     parser.add_argument("-m", "--module", help="filter endpoints by module")
     parser.add_argument("-c", "--controller", help="filter endpoints by controller name (excluding Controller suffix)")
     parser.add_argument("--cache-folder", default=None)
@@ -333,11 +334,8 @@ if __name__ == "__main__":
         schema_content = file.read()
     schemas = json.loads(schema_content)
 
-    # model_name = "opnsense.auth.group"
-    # model_name = "opnsense.cron.cron"
-    # model_name = "opnsense.captiveportal.captiveportal"
-    # model_name = "opnsense.cron.cron"
-    # schemas = {model_name: schemas[model_name]}
+    if args.models:
+        schemas = {name: schema for name, schema in schemas.items() if name in args.models}
 
     examples = generate_examples(schemas, should_validate=args.validate)
 
