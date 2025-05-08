@@ -25,28 +25,19 @@ use ReflectionClass;
 #[Attribute]
 class Argument
 {
-    public readonly string $shortArg;
-    public readonly string $longArg;
-    public readonly ?string $default;
-
-    public function __construct(string $shortArg, string $longArg, ?string $default = null) {
-        $this->shortArg = $shortArg;
-        $this->longArg = $longArg;
-        $this->default = $default;
-    }
+    public function __construct(string $shortArg, string $longArg, ?string $default = null) {}
 }
 
 
 class CliOptions {
     private static Self $instance;
-
     public readonly string $appDir;
     public readonly string $contribDir;
 
     #[Argument("s:", "source-folder:", "/usr/local/opnsense/mvc/app")]
     public readonly string $sourceFolder;
 
-    #[Argument("o:", "output-folder:")]
+    #[Argument("o:", "output-folder:", __DIR__)]
     public readonly string $outputFolder;
 
     #[Argument("t", "trace")]
@@ -71,35 +62,34 @@ class CliOptions {
         foreach ($class->getProperties() as $prop) {
             $attrs = $prop->getAttributes();
             if ($attrs) {
+                $propName = $prop->name;
                 $attrArgs = $attrs[0]->getArguments();
                 $shortOpts .= $attrArgs[0];
                 $longOpts[] = $attrArgs[1];
-                $argProps[str_replace(":", "", $attrArgs[0])] = $prop;
-                $argProps[str_replace(":", "", $attrArgs[1])] = $prop;
+                $argProps[str_replace(":", "", $attrArgs[0])] = $propName;
+                $argProps[str_replace(":", "", $attrArgs[1])] = $propName;
                 if (count($attrArgs) > 2) {
-                    $values[$prop->name] = $attrArgs[2];
+                    $values[$propName] = $attrArgs[2];
                 } elseif ($prop->getType()->getName() == "bool") {
-                    $values[$prop->name] = false;
+                    $values[$propName] = false;
                 } elseif (strrchr($attrArgs[0], ":") === false) {
                     throw new InvalidArgumentException("Switch $attrArgs[1] should be defined as bool");
                 } else {
-                    $values[$prop->name] = new InvalidArgumentException("Parameter $attrArgs[1] is mandatory");
+                    $values[$propName] = new InvalidArgumentException("Parameter $attrArgs[1] is mandatory");
                 }
             }
         }
 
-        if (strrchr("foLo:", ":") !== false) {
-            echo "is required\n";
-        }
-
         $opts = getopt($shortOpts, $longOpts);
         foreach ($opts as $arg => $value) {
-            $prop = $argProps[$arg];
-            if ($prop->getType()->getName() == "bool") {
-                $value = $value === false;  // PHP weirdness
+            $propName = $argProps[$arg];
+            if ($value === false) {
+                $value = true;  // PHP weirdness
             }
-            $values[$prop->name] = $value;
+            $values[$propName] = $value;
         }
+
+        foreach (["sourceFolder", "outputFolder"] as $prop)
 
         foreach ($values as $prop => $value) {
             if (gettype($value) == "object") {
