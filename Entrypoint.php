@@ -19,94 +19,122 @@ namespace OPNsense\OpenApi\Parsing;
 
 use InvalidArgumentException;
 
-$arguments = [
-    new Param("source-folder", $default = "/usr/local/opnsense/mvc/app"),
-    new Param("output-folder"),
-];
+use Attribute;
+use ReflectionClass;
 
-function toCamelCase(string $arrowCase) {
-    $camelCase = ucwords($arrowCase, "-");
-    $camelCase = str_replace("-", "", $camelCase);
-    $camelCase[0] = strtolower($camelCase[0]);
-    return $camelCase;
-}
-
-class Arg {
-    public readonly string $property;
-    public readonly string $arg;
+#[Attribute]
+class Argument
+{
     public readonly string $shortArg;
+    public readonly string $longArg;
     public readonly ?string $default;
-    public function __construct(string $arg = null, ?string $property = null, ?string $shortArg = null, ?string $default = null) {
-        $this->arg = $arg;
 
-        if ($property === null) {
-            $property = toCamelCase($arg);
-        }
-        $this->property = $property;
-
-        if ($shortArg === null) {
-            $shortArg = $arg[0];
-        }
+    public function __construct(string $shortArg, string $longArg, ?string $default = null) {
         $this->shortArg = $shortArg;
+        $this->longArg = $longArg;
         $this->default = $default;
     }
-
-    public function buildOpts(string $shortOpts, array $longOpts) {
-        $shortOpts .= $this->shortArg;
-        $longOpts = [...$longOpts, $this->arg];
-        return [$shortOpts, $longOpts];
-    }
 }
 
-
-class Param extends Arg {
-    public function buildOpts(string $shortOpts, array $longOpts) {
-        $optArgs = parent::buildOpts($shortOpts, $longOpts);
-        $optArgs[0] .= ":";
-        $optArgs[1][count($optArgs[1]) - 1] .= ":";
-        return $optArgs;
-    }
-}
 
 class CliOptions {
     private static Self $instance;
 
-    // private static string $DEFAULT_SOURCE_FOLDER = "/usr/local/opnsense/mvc/app";
+    public readonly string $appDir;
+    public readonly string $contribDir;
 
+    #[Argument("s:", "source-folder:", "/usr/local/opnsense/mvc/app")]
     public readonly string $sourceFolder;
+
+    #[Argument("o:", "output-folder:")]
     public readonly string $outputFolder;
+
+    #[Argument("t", "trace")]
+    public readonly bool $trace;
+
+    #[Argument("m", "generate-models")]
+    public readonly bool $generateModels;
+
+    #[Argument("g", "generate-schemas")]
+    public readonly bool $generateSchemas;
+
+    #[Argument("x", "generate-examples")]
+    public readonly bool $generateExamples;
 
 
     private function __construct() {
-        global $argc, $arguments;
-
-        // $shortOpts = "";
-        // $longOpts = [];
-        $optArgs = ["", []];
-        foreach ($arguments as $argument) {
-            $optArgs = $argument->buildOpts(...$optArgs);
+        $class = new ReflectionClass(__CLASS__);
+        $argProps = [];
+        $shortOpts = "";
+        $longOpts = [];
+        $values = [];
+        foreach ($class->getProperties() as $prop) {
+            $attrs = $prop->getAttributes();
+            if ($attrs) {
+                $attrArgs = $attrs[0]->getArguments();
+                $shortOpts .= $attrArgs[0];
+                $longOpts[] = $attrArgs[1];
+                $argProps[str_replace(":", "", $attrArgs[0])] = $prop;
+                $argProps[str_replace(":", "", $attrArgs[1])] = $prop;
+                if (count($attrArgs) > 2) {
+                    $values[$prop->name] = $attrArgs[2];
+                } elseif ($prop->getType()->getName() == "bool") {
+                    $values[$prop->name] = false;
+                } elseif (strrchr($attrArgs[0], ":") === false) {
+                    throw new InvalidArgumentException("Switch $attrArgs[1] should be defined as bool");
+                } else {
+                    $values[$prop->name] = new InvalidArgumentException("Parameter $attrArgs[1] is mandatory");
+                }
+            }
         }
-        var_dump($optArgs);
 
-        // $shortOpts = implode(array_values(static::$arguments));
-        // $opts = getopt($shortOpts, array_keys(static::$arguments));
+        if (strrchr("foLo:", ":") !== false) {
+            echo "is required\n";
+        }
 
-        // $sourceFolder = array_pop($opts);
-        // if (!isset($sourceFolder)) {
-        //     $sourceFolder = static::$DEFAULT_SOURCE_FOLDER;
+        $opts = getopt($shortOpts, $longOpts);
+        foreach ($opts as $arg => $value) {
+            $prop = $argProps[$arg];
+            if ($prop->getType()->getName() == "bool") {
+                $value = $value === false;  // PHP weirdness
+            }
+            $values[$prop->name] = $value;
+        }
+
+        foreach ($values as $prop => $value) {
+            if (gettype($value) == "object") {
+                throw $value;
+            }
+            $this->$prop = $value;
+        }
+
+
+        // walk backwards looking for /mvc/app folder, for developer ergonomics
+        // $appBase = $this->sourceFolder;
+        // while ($appBase != "/") {
+        //     $appDir = realpath("$appBase/mvc/app");
+        //     if ($appDir) {break;}
+        //     $appBase = dirname($appBase);
         // }
-        // $this->sourceFolder = $sourceFolder;
-        // // echo "$this->sourceFolder\n";
-
-        // $outputFolder = array_pop($opts);
-        // if (!isset($outputFolder)) {
-        //     $outputFolder = __DIR__;
+        // if (!$appDir) {
+        //     throw new InvalidArgumentException("Could not find 'mvc/app' folder in any parent of $this->sourceFolder");
         // }
-        // $this->outputFolder = $outputFolder;
-        // echo "$this->outputFolder\n";
-        // var_dump(new Arg("source-folder"));
-        // var_dump(new Param("source-folder"));
-        var_dump($arguments);
+
+        // $contribBase = $appBase;
+        // while ($contribBase != "/") {
+        //     $contribDir = realpath("$contribBase/contrib");
+        //     if ($contribDir && realpath("$contribBase/contrib/tzdata/iso3166.tab")) {break;}
+        //     $contribBase = dirname($contribBase);
+        // }
+        // if (!$contribDir) {
+        //     throw new InvalidArgumentException("Could not find 'contrib' folder in any parent of $appDir");
+        // }
+
+        // $this->appDir = $appDir;
+        // $this->contribDir = $contribDir;
+
+        var_dump($this);
+
     }
 
     public static function read() {
@@ -118,57 +146,3 @@ class CliOptions {
 }
 
 $options = CliOptions::read();
-
-// if (array_key_exists("s", $opts)) {
-//     $source_folder = $opts["s"];
-// } elseif (array_key_exists("source-folder", $opts)) {
-//     $source_folder = $opts["source-folder"];
-// } else {
-//     $source_folder = null;
-// }
-
-// if (!$source_folder) {
-//     $source_folder = $DEFAULT_SOURCE_DIR;
-//     $app_dir = realpath($source_folder);
-// } else {
-//     $app_base = $source_folder;
-//     while ($app_base != "/") {
-//         $app_dir = realpath($app_base . "/mvc/app");
-//         if ($app_dir) {break;}
-//         $app_base = dirname($app_base);
-//     }
-// }
-// if (!$app_dir) {
-//     throw new InvalidArgumentException("Could not find 'mvc/app' folder in any parent of " . $source_folder);
-// }
-
-// $contrib_base = $app_dir;
-// while ($contrib_base != "/") {
-//     $contrib_dir = realpath($contrib_base . "/contrib");
-//     if ($contrib_dir && realpath($contrib_base . "/contrib/tzdata/iso3166.tab")) {break;}
-//     $contrib_base = dirname($contrib_base);
-// }
-// if (!$contrib_dir) {
-//     throw new InvalidArgumentException("Could not find 'contrib' folder in any parent of " . $app_dir);
-// }
-
-// $should_trace = array_key_exists("t", $opts);
-
-// if (array_key_exists("m", $opts)) {
-//     $model_file = "models.json";
-// } else {
-//     $model_file = null;
-// }
-// if (array_key_exists("z", $opts)) {
-//     $schema_file = "schemas.json";
-// } else {
-//     $schema_file = null;
-// }
-
-// $should_generate_examples = array_key_exists("g", $opts);
-
-// if (array_key_exists("x", $opts)) {
-//     $example_file = "examples.json";
-// } else {
-//     $example_file = null;
-// }
