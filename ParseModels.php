@@ -136,7 +136,6 @@ class Field {
         $schema = [];
         $schema["x-type"] = $this->type;
 
-
         if (
             $this->is("OPNsense\Base\FieldTypes\ModelRelationField") ||
             $this->is("OPNsense\Base\FieldTypes\JsonKeyValueStoreField") ||
@@ -150,6 +149,7 @@ class Field {
             $childSchemas = [];
             foreach ($this->children as $prop => $child) {
                 $childSchemas[$uuidPattern] = $child->getSchema();
+                break;
             }
             $schema["type"] = "object";
             $schema["additionalProperties"] = false;
@@ -338,6 +338,16 @@ class Field {
                 }
                 $schema["pattern"] = $pattern;
             }
+        }
+
+        $value = $this->node->getCurrentValue();
+        if ($value !== "") {
+            if ($schema["type"] == "integer") {
+                $value = (int) $value;
+            } elseif ($schema["type"] == "number") {
+                $value = (float) $value;
+            }
+            $schema["example"] = $value;
         }
 
         return $schema;
