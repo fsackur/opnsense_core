@@ -29,5 +29,11 @@ output/**
 /src/share/certs/
 /src/var/run/
 /src/etc/
+src/bin/qyua
+src/man/man1/
+**/GridExample/**
+**/HelloWorld/**
+src/opnsense/service/conf/actions.d/actions_helloworld.conf
+src/opnsense/service/templates/OPNsense/HelloWorld/
 **/OPNsense/OpenApi/**
 /src/opnsense/service/conf/actions.d/actions_openapi.conf
