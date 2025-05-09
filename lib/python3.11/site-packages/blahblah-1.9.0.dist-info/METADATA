@@ -1,0 +1,33 @@
+Metadata-Version: 2.1
+Name: blahblah
+Version: 1.9.0
+Summary: Fake data generator for district42 schema
+Home-page: https://github.com/d42-schemas/blahblah
+Author: Nikita Tsvetkov
+Author-email: tsv1@fastmail.com
+License: Apache-2.0
+Project-URL: Docs, https://d42.sh
+Project-URL: GitHub, https://github.com/d42-schemas/blahblah
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Typing :: Typed
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+Requires-Dist: niltype<2.0,>=0.3
+Requires-Dist: district42<2.0,>=1.8.0
+
+# blahblah
+
+[![Codecov](https://img.shields.io/codecov/c/github/d42-schemas/blahblah/master.svg?style=flat-square)](https://codecov.io/gh/d42-schemas/blahblah)
+[![PyPI](https://img.shields.io/pypi/v/blahblah.svg?style=flat-square)](https://pypi.python.org/pypi/blahblah/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/blahblah?style=flat-square)](https://pypi.python.org/pypi/blahblah/)
+[![Python Version](https://img.shields.io/pypi/pyversions/blahblah.svg?style=flat-square)](https://pypi.python.org/pypi/blahblah/)
+
+`blahblah` is a package designed for generating fake data based on the [district42](https://github.com/d42-schemas/district42) schemas. It provides a simple and flexible way to generate test data for your applications.
+
+This package is part of the [d42 package](https://pypi.org/project/d42/). For a quick-start guide and detailed documentation, please visit the official documentation at [d42.sh/docs/quick-start](https://d42.sh/docs/quick-start)

@@ -1,0 +1,32 @@
+Metadata-Version: 2.1
+Name: district42
+Version: 1.9.0
+Summary: Data description language for defining data models
+Home-page: https://github.com/d42-schemas/district42
+Author: Nikita Tsvetkov
+Author-email: tsv1@fastmail.com
+License: Apache-2.0
+Project-URL: Docs, https://d42.vedro.io
+Project-URL: GitHub, https://github.com/d42-schemas/district42
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Typing :: Typed
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+Requires-Dist: niltype<2.0,>=0.3
+
+# district42
+
+[![Codecov](https://img.shields.io/codecov/c/github/d42-schemas/district42/master.svg?style=flat-square)](https://codecov.io/gh/d42-schemas/district42)
+[![PyPI](https://img.shields.io/pypi/v/district42.svg?style=flat-square)](https://pypi.python.org/pypi/district42/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/district42?style=flat-square)](https://pypi.python.org/pypi/district42/)
+[![Python Version](https://img.shields.io/pypi/pyversions/district42.svg?style=flat-square)](https://pypi.python.org/pypi/district42/)
+
+`district42` is a data description language designed for defining data models. It provides a simple and expressive way to define the structure and constraints of your data.
+
+This package serves as the foundation for the [d42 package](https://pypi.org/project/d42/). For a quick-start guide and detailed documentation, please visit the official documentation at [d42.vedro.io/docs/quick-start](https://d42.vedro.io/docs/quick-start)

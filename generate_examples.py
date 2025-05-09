@@ -34,7 +34,7 @@ import yaml
 import random
 import sys
 
-sys.path.append("/usr/local/opnsense/scripts/OPNsense/OpenApi/lib/site-packages")
+sys.path.insert(0, f"{os.path.dirname(__file__)}/lib/python3.11/site-packages")
 
 from niltype import Nil, Nilable
 from collections import defaultdict
