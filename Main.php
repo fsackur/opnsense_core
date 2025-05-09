@@ -21,11 +21,6 @@ $parser = new Parser(
 );
 
 
-$schemaNames = [];
-foreach ($options->models as $className) {
-    $schemaNames[] = Model::getSchemaName($className);
-}
-
 $generateExamples = $options->generate == GenerationStep::Examples;
 $generateSchemas = $generateExamples || $options->generate == GenerationStep::Schemas;
 $generateModels = $generateSchemas || $options->generate == GenerationStep::Models;
@@ -64,7 +59,12 @@ if ($generateExamples) {
     $command = __DIR__ . "/generate_examples.py";
     $command .= " --schema-file $options->schemaFile";
     $command .= " --output-file $options->exampleFile";
-    if ($schemaNames) {
+
+    if ($options->models) {
+        $schemaNames = [];
+        foreach ($options->models as $className) {
+            $schemaNames[] = Model::getSchemaName($className);
+        }
         $command .= " " . implode(" ", $schemaNames);
     }
 
