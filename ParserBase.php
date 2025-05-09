@@ -163,9 +163,12 @@ class Parser
         }
 
         $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->basePath));
-        $class_names = array();
+        $class_names = [
+            $this->rootClass->getName(),
+        ];
 
         foreach ($rii as $file) {
+            $matches = null;
             if (
                 $file->isDir() ||
                 !str_ends_with($file, ".php") ||
@@ -175,9 +178,13 @@ class Parser
             }
 
             $rel_path = preg_replace("/^\w+\//", "", $matches[0]);
-            $class_name = preg_replace("/\.php$/", "", $rel_path);
-            $class_name = preg_replace("/\//", "\\", $class_name);
-            $class_names[] = $class_name;
+            $class_file = preg_replace("/\.php$/", "", $rel_path);
+            $class_name = preg_replace("/\//", "\\", $class_file);
+
+            $class = new ReflectionClass($class_name);
+            if ($class->isSubclassOf($this->rootClass)) {
+                $class_names[] = $class_name;
+            }
         }
 
         $this->classNames = $class_names;

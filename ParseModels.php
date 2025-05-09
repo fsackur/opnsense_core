@@ -13,6 +13,7 @@ use ReflectionProperty;
 use ReflectionParameter;
 use ReflectionException;
 use SimpleXMLElement;
+use OPNsense\Core\Backend;
 use OPNsense\Base\BaseModel;
 use OPNsense\Base\FieldTypes\BaseField;
 use OPNsense\Base\FieldTypes\ContainerField;
@@ -105,6 +106,13 @@ class Field {
         $this->isEnum = $this->is("OPNsense\Base\FieldTypes\BaseListField");
         $this->isRequired = $node->isRequired();
 
+        // If the value is in the cache, then tracing the backend will not hit this action.
+        // Run it explicitly.
+        if ($this->is("OPNsense\Base\FieldTypes\JsonKeyValueStoreField")) {
+            $configdAction = $this->getValue("internalConfigdPopulateAct");
+
+            (new Backend())->configdRun($configdAction, false, 20);
+        }
 
         // doesn't iterate over ArrayField
         foreach ($node->iterateItems() as $key => $child) {
@@ -119,7 +127,8 @@ class Field {
 
             $child = $class->getMethod("getTemplateNode")->invoke($node);
 
-            $this->children[$fakeUuid] = new Field($child);
+            // we still need to exercise all the actual fields, but we don't want to capture them
+            $this->children = [$fakeUuid => new Field($child)];
         }
     }
 
@@ -147,10 +156,17 @@ class Field {
 
         } elseif ($this->isAssArray) {
             $childSchemas = [];
-            foreach ($this->children as $prop => $child) {
-                $childSchemas[$uuidPattern] = $child->getSchema();
-                break;
-            }
+
+            // echo "$this->reference\n";
+            // foreach ($this->children as $prop => $child) {
+            //     echo "    $prop => $child->type\n";
+            // }
+
+            $key = array_key_first($this->children);
+            $child = $this->children[$key];
+            $childSchemas[$uuidPattern] = $child->getSchema();
+            //     break;
+            // }
             $schema["type"] = "object";
             $schema["additionalProperties"] = false;
             $schema["patternProperties"] = $childSchemas;
@@ -247,7 +263,7 @@ class Field {
                 // OPNsense\Base\FieldTypes\VirtualIPField
                 $schema["type"] = "string";
                 $schema["enum"] = ["TODO"];
-                echo "$this->type\n";
+                // echo "$this->type\n";
             } elseif (count($childSchemas) == 1) {
                 $schema = $childSchemas[0];
             } else {

@@ -17,8 +17,13 @@ $parser = new Parser(
     new ReflectionClass(Model::class),
     new ReflectionClass(BaseModel::class),
     new ReflectionClass(ModelRegistry::class),
-    $pathRegex = "/models\/\w+\/\w+\/\w+\.php/",
+    // $pathRegex = "/models\/\w+\/\w+\/\w+\.php/",
+    $pathRegex = "/models\/(\w+\/){2,3}\w+\.php/",
 );
+
+// $parser->find_classes();
+// // var_dump($parser->find_classes());
+// die();
 
 
 $generateExamples = $options->generate == GenerationStep::Examples;

@@ -12,8 +12,6 @@ class TracingBackend extends MockBackendBase
     {
         $timeout = 120;
 
-        echo "$event\n";
-
         $stream = parent::configdStream($event, $detach, $connect_timeout, $poll_timeout);
 
         if ($stream === null) {
