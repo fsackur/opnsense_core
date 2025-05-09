@@ -60,7 +60,18 @@ function finish_mocks() {
 
 
 $config = include "$options->appDir/config/config.php";
-$config->update('globals.config_path', "$options->outputFolder/");
+
+$configFile = $config->globals->config_path . "config.xml";
+if (!is_file($configFile) || !filesize($configFile)) {
+    $config->update('globals.config_path', "$options->outputFolder/");
+
+    $configFile = $config->globals->config_path . "config.xml";
+    if (!is_file($configFile) || !filesize($configFile)) {
+        copy(__DIR__ . "/src/opnsense/service/tests/config/config.xml", $configFile);
+    }
+}
+
 $config->update('application.contribDir', $options->contribDir);
 set_include_path($options->contribDir);
+
 require_once "$options->appDir/config/loader.php";

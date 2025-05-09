@@ -9,9 +9,6 @@ use OPNsense\Base\BaseModel;
 require_once __DIR__ . "/Setup.php";
 require_once __DIR__ . "/ParseModels.php";
 
-if (!is_dir($options->outputFolder)) {
-    mkdir($options->outputFolder);
-}
 
 setup_mocks();
 

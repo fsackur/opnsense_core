@@ -121,16 +121,22 @@ class CliOptions {
             }
             $values[$propName] = $value;
         }
-
         $this->models = array_slice($argv, $restIndex);
 
-        foreach (["sourceFolder", "outputFolder"] as $prop) {
-            $path = realpath($values[$prop]);
-            if (!$path) {
-                throw new InvalidArgumentException("$prop is not a directory");
-            }
-            $values[$prop] = $path;
+
+        $sourceFolder = realpath($values["sourceFolder"]);
+        if (!$sourceFolder) {
+            throw new InvalidArgumentException("$prop is not a directory");
         }
+        $values["sourceFolder"] = $sourceFolder;
+
+        $outputFolder_ = $values["outputFolder"];
+        $outputFolder = realpath($outputFolder_);
+        if (!$outputFolder) {
+            mkdir($$outputFolder_);
+            $outputFolder = realpath($outputFolder_);
+        }
+        $values["outputFolder"] = $outputFolder;
 
         foreach ($values as $prop => $value) {
             if (gettype($value) == "object") {
