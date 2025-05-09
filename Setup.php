@@ -39,12 +39,12 @@ MockBackendBase::setAppDir($options->appDir);
 function setup_mocks() {
     global $service_tempfile, $options;
 
-    if ($options->trace) {
+    if ($options->backend == BackendMock::Trace) {
         include_once __DIR__ . '/TracingBackend.php';
         if (file_exists($service_tempfile)) {
             unlink($service_tempfile);
         }
-    } else {
+    } elseif ($options->backend == BackendMock::Replay) {
         include_once __DIR__ . '/MockBackend.php';
         MockBackendBase::$calls = load_mocks($options->backendMockFile);
     }
@@ -53,7 +53,7 @@ function setup_mocks() {
 function finish_mocks() {
     global $options;
 
-    if ($options->trace) {
+    if ($options->backend == BackendMock::Trace) {
         dump_mocks(MockBackendBase::$calls, $options->backendMockFile);
     }
 }

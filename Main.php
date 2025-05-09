@@ -26,9 +26,9 @@ foreach ($options->models as $className) {
     $schemaNames[] = Model::getSchemaName($className);
 }
 
-$generateExamples = $options->generateExamples;
-$generateSchemas = $options->generateSchemas || ($generateExamples && !file_exists($options->schemaFile));
-$generateModels = $options->generateModels;
+$generateExamples = $options->generate == GenerationStep::Examples;
+$generateSchemas = $generateExamples || $options->generate == GenerationStep::Schemas;
+$generateModels = $generateSchemas || $options->generate == GenerationStep::Models;
 
 
 $models = [];
@@ -57,7 +57,7 @@ if ($generateSchemas) {
     dump_json($schemas, $options->schemaFile, true);
 }
 
-if ($options->generateExamples) {
+if ($generateExamples) {
     $pyOutput = null;
     $pyResultCode = null;
 

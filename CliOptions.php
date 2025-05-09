@@ -1,26 +1,39 @@
 <?php
-/**
- * Parse controller classes using reflection, to minimise regex parsing.
- *
- * I do the bare minimum in PHP because a) I don't know PHP and b) type system
- * is not great.
- *
- * Called from `parse_endpoints.py`.
- *
- * USAGE:
- *      php ParseControllers.php [ARGS]
- *
- * ARGS:
- *      -o, --output-file      path to write a JSON file
- */
 
 namespace OPNsense\OpenApi\Parsing;
 
 
 use InvalidArgumentException;
-
 use Attribute;
 use ReflectionClass;
+
+function parseEnum($class, string $text)
+{
+    $text_ = strtolower($text);
+    foreach ($class::cases() as $case) {
+        if (str_starts_with($case->value, $text_)) {
+            return $case;
+        }
+    }
+    throw new InvalidArgumentException("Not a $class: $text");
+}
+
+enum BackendMock: string
+{
+    case Trace = "trace";
+    case Replay = "replay";
+    case Unmocked = "unmocked";
+}
+
+// echo parseEnum(BackendMock::class, "t")->value; die();
+
+enum GenerationStep: string
+{
+    case None = "none";
+    case Models = "models";
+    case Schemas = "schemas";
+    case Examples = "examples";
+}
 
 #[Attribute]
 class Argument
@@ -63,25 +76,25 @@ class CliOptions {
     #[Argument("o:", "output-folder:", __DIR__ . "/output")]
     public readonly string $outputFolder;
 
-    #[Argument("t", "trace")]
-    public readonly bool $trace;
+    #[Argument("b:", "backend:", "replay")]
+    public readonly BackendMock $backend;
 
-    #[Argument("m", "generate-models")]
-    public readonly bool $generateModels;
+    #[Argument("g:", "generate:", "examples")]
+    public readonly GenerationStep $generate;
 
-    #[Argument("g", "generate-schemas")]
-    public readonly bool $generateSchemas;
+    #[Argument("m:", "model:", null)]
+    public readonly ?array $models;
 
-    #[Argument("x", "generate-examples")]
-    public readonly bool $generateExamples;
+    #[Argument("v", "validate")]
+    public readonly bool $validate;
 
-    public readonly array $models;
     public readonly string $backendMockFile;
     public readonly string $modelFile;
     public readonly string $schemaFile;
     public readonly string $exampleFile;
 
-    private function __construct() {
+    private function __construct()
+    {
         global $argv;
 
         $class = new ReflectionClass(__CLASS__);
@@ -94,6 +107,7 @@ class CliOptions {
             if ($attrs) {
                 $propName = $prop->name;
                 $arg = $attrs[0]->newInstance();
+                $hasDefault = count($attrs[0]->getArguments()) > 2;
 
                 $longOpts[] = $arg->longArg;
                 $argProps[$arg->name] = $propName;
@@ -102,7 +116,7 @@ class CliOptions {
                     $argProps[$arg->shortName] = $propName;
                 }
 
-                if ($arg->default !== null) {
+                if ($hasDefault) {
                     $values[$propName] = $arg->default;
                 } elseif ($arg->isSwitch) {
                     $values[$propName] = false;
@@ -121,8 +135,10 @@ class CliOptions {
             }
             $values[$propName] = $value;
         }
-        $this->models = array_slice($argv, $restIndex);
-
+        $posArgs = array_slice($argv, $restIndex);
+        if ($posArgs) {
+            throw new InvalidArgumentException("Unexpected: " . implode(" ", $posArgs));
+        }
 
         $sourceFolder = realpath($values["sourceFolder"]);
         if (!$sourceFolder) {
@@ -138,8 +154,16 @@ class CliOptions {
         }
         $values["outputFolder"] = $outputFolder;
 
+        $values["backend"] = parseEnum(BackendMock::class, $values["backend"]);
+        $values["generate"] = parseEnum(GenerationStep::class, $values["generate"]);
+
+        $models = $values["models"];
+        if ($models && !is_array($models)) {
+            $values["models"] = [$models];
+        }
+
         foreach ($values as $prop => $value) {
-            if (gettype($value) == "object") {
+            if (gettype($value) == "object" && get_class($value) == "InvalidArgumentException") {
                 throw $value;
             }
             $this->$prop = $value;
